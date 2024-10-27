@@ -4,6 +4,7 @@ const input = require('input');
 const fs = require('fs');
 const path = require('path');
 const { parseSignal, saveSignalToFile } = require('./signalParser');
+const { executeTrade } = require('./binanceExecutor'); // Import the Binance trade execution function
 
 // Replace with your API ID and Hash from my.telegram.org
 const apiId = 18030888;
@@ -31,7 +32,7 @@ const stringSession = new StringSession('');
   console.log('Session:', client.session.save());
 
   // Replace with your group's ID (ensure it's an integer)
-  const targetGroupId = 1001289614360;
+  const targetGroupId = 4522993194;
 
   // Log messages to a file
   function logMessage(message) {
@@ -49,7 +50,8 @@ const stringSession = new StringSession('');
   client.addEventHandler((update) => {
     if (update && update.message && update.message.message) {
       const message = update.message.message;
-      const groupId = update.message.peerId.channelId || update.message.peerId.chatId;
+      const groupId = Number(update.message.peerId.channelId) 
+      || Number(update.message.peerId.chatId);
 
       // Check if it's from the right group
       if (groupId === targetGroupId) {
@@ -65,6 +67,9 @@ const stringSession = new StringSession('');
 
           // Save the parsed data to signals.txt
           saveSignalToFile(signalData);
+
+          // Execute the trade using Binance API
+          executeTrade(signalData);
         }
       }
     }
