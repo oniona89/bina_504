@@ -8,6 +8,7 @@ const binanceClient = binance.default({
   apiKey: process.env.BINANCE_API_KEY,
   apiSecret: process.env.BINANCE_API_SECRET,
   useServerTime: true,
+  futures: true
 });
 
 // Log file path
@@ -69,7 +70,7 @@ async function executeTrade(signalData) {
         clearInterval(checkPriceInterval);
         logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`);
     
-        // Calculate the investment amount (e.g., $100)
+        // Calculate the investment amount (e.g., $30)
         const investment = 30;
         const quantity = (investment / currentPrice).toFixed(2); // Adjust precision based on the trading pair
     
