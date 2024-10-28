@@ -32,7 +32,7 @@ function logMessage(message) {
 // Function to poll the current price of a symbol
 async function getCurrentPrice(symbol) {
   try {
-    const ticker = await binanceClient.prices({ symbol });
+    const ticker = await binanceClient.futuresPrices(); // Use futuresPrices for Futures
     const currentPrice = parseFloat(ticker[symbol]);
     logMessage(`Fetched current price for ${symbol}: ${currentPrice}`);
     return currentPrice;
@@ -77,8 +77,8 @@ async function executeTrade(signalData) {
         // Set leverage for futures trading
         await setLeverage(tradingSymbol, leverage);
     
-        // Place the market order
-        const order = await placeMarketOrder(tradingSymbol, orderSide, quantity);
+        // Place the market order on Futures
+        const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
     
         // Log the market order result
         if (order) {
@@ -109,10 +109,10 @@ async function setLeverage(symbol, leverage) {
   }
 }
 
-// Function to place a market order
-async function placeMarketOrder(symbol, side, quantity) {
+// Function to place a market order on Binance Futures
+async function placeFuturesMarketOrder(symbol, side, quantity) {
   try {
-    const order = await binanceClient.order({
+    const order = await binanceClient.futuresOrder({
       symbol,
       side,
       type: 'MARKET',
