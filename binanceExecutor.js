@@ -126,31 +126,30 @@ async function placeMarketOrder(symbol, side, quantity) {
   }
 }
 
-// Function to set Stop-Loss and Take-Profit orders
+// Function to set Stop-Loss and Take-Profit orders for Binance Futures
 async function setStopLossAndTakeProfit(symbol, side, quantity, stopLossPrice, takeProfitPrice) {
   try {
     const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
 
-    // Set the Stop-Loss Order
-    await binanceClient.order({
+    // Set the Take-Profit Market Order
+    await binanceClient.futuresOrder({
+      symbol,
+      side: oppositeSide,
+      type: 'TAKE_PROFIT_MARKET',
+      stopPrice: takeProfitPrice.toFixed(2),
+      quantity,
+    });
+    logMessage(`Take-Profit order set at ${takeProfitPrice} for ${symbol}`);
+
+    // Set the Stop-Loss Market Order
+    await binanceClient.futuresOrder({
       symbol,
       side: oppositeSide,
       type: 'STOP_MARKET',
-      stopPrice: stopLossPrice,
+      stopPrice: stopLossPrice.toFixed(2),
       quantity,
     });
     logMessage(`Stop-Loss order set at ${stopLossPrice} for ${symbol}`);
-
-    // Set the Take-Profit Order
-    await binanceClient.order({
-      symbol,
-      side: oppositeSide,
-      type: 'LIMIT',
-      price: takeProfitPrice,
-      quantity,
-      timeInForce: 'GTC', // Good 'Til Canceled
-    });
-    logMessage(`Take-Profit order set at ${takeProfitPrice} for ${symbol}`);
   } catch (error) {
     logMessage(`Error setting Stop-Loss/Take-Profit for ${symbol}: ${error.message}`);
   }
