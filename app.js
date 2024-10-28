@@ -4,7 +4,7 @@ const input = require('input');
 const fs = require('fs');
 const path = require('path');
 const { parseSignal, saveSignalToFile } = require('./signalParser');
-const { executeTrade } = require('./binanceExecutor'); // Import the Binance trade execution function
+const { executeTrade } = require('./binanceExecutor');
 
 // Replace with your API ID and Hash from my.telegram.org
 const apiId = 18030888;
@@ -12,9 +12,16 @@ const apiHash = 'cba4b1a292d9cb0800e953b94cd76654';
 
 // Log file paths
 const logFilePath = path.join(__dirname, 'log.txt');
+const sessionFilePath = path.join(__dirname, 'session.txt'); // File to store the session string
 
-// StringSession for saving session (so you don't need to re-login each time)
-const stringSession = new StringSession('');
+// Load the session from the file if it exists
+let sessionString = '';
+if (fs.existsSync(sessionFilePath)) {
+  sessionString = fs.readFileSync(sessionFilePath, 'utf-8');
+  console.log('Session loaded from file.');
+}
+
+const stringSession = new StringSession(sessionString); // Initialize the session with saved data if available
 
 (async () => {
   const client = new TelegramClient(stringSession, apiId, apiHash, {
@@ -29,7 +36,13 @@ const stringSession = new StringSession('');
   });
 
   console.log('You are now connected.');
-  console.log('Session:', client.session.save());
+
+  // Save the session to the file if it's not already saved
+  const sessionData = client.session.save();
+  if (!fs.existsSync(sessionFilePath) || sessionData !== sessionString) {
+    fs.writeFileSync(sessionFilePath, sessionData);
+    console.log('Session saved to file.');
+  }
 
   // Replace with your group's ID (ensure it's an integer)
   const targetGroupId = 4522993194;
