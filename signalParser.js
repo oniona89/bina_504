@@ -1,17 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to parse the message signal
 function parseSignal(message) {
   const signalData = {};
 
-  // Regex patterns to match the relevant data
+  // Regex patterns to match relevant data
   const positionPattern = /(LONG|SHORT)/i;
   const symbolPattern = /(\w+\/USDT)/i;
-  const entryPricePattern = /price\s([\d.]+-[\d.]+)/i;
-  const targetPattern = /🎯([\d.]+)/g;
-  const leveragePattern = /Leverage\s*:\s*x(\d+)/i;
-  const stopLossPattern = /STOP LOSS\s*:\s*([\d.]+)/i;
+  const entryPricePattern = /price\s?\$?([\d.]+)(?:-(\d+.\d+))?/i; // Handle single price or range
+  const targetPattern = /🎯\$?([\d.]+)/g;
+  const leveragePattern = /Leverage\s*:\s*(\d+)(?:x)?-(\d+)(?:x)?/i; // Handle leverage range
+  const stopLossPattern = /STOP-LOSS\s?\$?([\d.]+)/i;
 
   // Extract position type (LONG or SHORT)
   const positionMatch = message.match(positionPattern);
@@ -19,16 +18,18 @@ function parseSignal(message) {
     signalData.position = positionMatch[1].toUpperCase();
   }
 
-  // Extract trading symbol (e.g., NOT/USDT)
+  // Extract trading symbol (e.g., BCH/USDT)
   const symbolMatch = message.match(symbolPattern);
   if (symbolMatch) {
     signalData.symbol = symbolMatch[1].toUpperCase();
   }
 
-  // Extract entry price range
+  // Extract entry price range or single price and adjust if necessary
   const entryPriceMatch = message.match(entryPricePattern);
   if (entryPriceMatch) {
-    signalData.entryPriceRange = entryPriceMatch[1];
+    const price = parseFloat(entryPriceMatch[1]);
+    const maxPrice = entryPriceMatch[2] ? parseFloat(entryPriceMatch[2]) : price + 0.9; // Add range if single price
+    signalData.entryPriceRange = `${price.toFixed(2)}-${maxPrice.toFixed(2)}`;
   }
 
   // Extract all target prices
@@ -39,10 +40,12 @@ function parseSignal(message) {
   }
   signalData.targets = targets;
 
-  // Extract leverage
+  // Extract leverage and calculate the average if it's a range
   const leverageMatch = message.match(leveragePattern);
   if (leverageMatch) {
-    signalData.leverage = parseInt(leverageMatch[1]);
+    const minLeverage = parseInt(leverageMatch[1], 10);
+    const maxLeverage = parseInt(leverageMatch[2], 10);
+    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2); // Average of the range
   }
 
   // Extract stop loss
