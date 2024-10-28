@@ -71,7 +71,7 @@ async function executeTrade(signalData) {
         logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`);
     
         // Calculate the investment amount (e.g., $10)
-        const investment = 10;
+        const investment = 30;
         const quantity = (investment / currentPrice).toFixed(2); // Adjust precision based on the trading pair
     
         // Set leverage for futures trading
