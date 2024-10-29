@@ -65,7 +65,7 @@ async function executeTrade(signalData) {
 
       // Round investment to 2 decimal places for USDT pairs
       const investment = 30;
-      const quantity = (investment / currentPrice).toFixed(2);
+      const quantity = (investment / currentPrice).toFixed(1);
       console.log(`investment: `, investment)
       console.log(`quantity: `, quantity)
       const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
