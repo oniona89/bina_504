@@ -46,11 +46,12 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
 
   // Replace with your group's ID (ensure it's an integer)
   const targetGroupId = 1001754775046;
+  const log_output_group_id = 4522993194
 
   // Function to send a message to the Telegram group
   async function sendTelegramMessage(message) {
     try {
-      await client.sendMessage(targetGroupId, { message });
+      await client.sendMessage(log_output_group_id, { message });
       console.log(`Sent message to Telegram group: ${message}`);
     } catch (error) {
       console.error('Failed to send message to Telegram:', error);
