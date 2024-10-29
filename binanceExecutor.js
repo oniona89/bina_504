@@ -141,15 +141,20 @@ async function setStopLossAndTakeProfit(symbol, side, quantity, stopLossPrice, t
     });
     logMessage(`Take-Profit order set at ${takeProfitPrice} for ${symbol}`);
 
-    // Set the Stop-Loss Market Order
-    await binanceClient.futuresOrder({
-      symbol,
-      side: oppositeSide,
-      type: 'STOP_MARKET',
-      stopPrice: stopLossPrice.toFixed(2),
-      quantity,
-    });
-    logMessage(`Stop-Loss order set at ${stopLossPrice} for ${symbol}`);
+    // Check if stopLossPrice is defined before placing Stop-Loss order
+    if (stopLossPrice !== undefined) {
+      // Set the Stop-Loss Market Order
+      await binanceClient.futuresOrder({
+        symbol,
+        side: oppositeSide,
+        type: 'STOP_MARKET',
+        stopPrice: stopLossPrice.toFixed(2),
+        quantity,
+      });
+      logMessage(`Stop-Loss order set at ${stopLossPrice} for ${symbol}`);
+    } else {
+      logMessage(`Stop-Loss order not set because stopLossPrice is undefined for ${symbol}`);
+    }
   } catch (error) {
     logMessage(`Error setting Stop-Loss/Take-Profit for ${symbol}: ${error.message}`);
   }
