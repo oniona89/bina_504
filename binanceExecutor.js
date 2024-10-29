@@ -33,7 +33,7 @@ function logMessage(message) {
 async function getCurrentPrice(symbol) {
   try {
     const ticker = await binanceClient.futuresPrices(); // Use futuresPrices for Futures
-    const currentPrice = parseFloat(ticker[symbol]);
+    const currentPrice = parseFloat(ticker[symbol]).toFixed(2);
     logMessage(`Fetched current price for ${symbol}: ${currentPrice}`);
     return currentPrice;
   } catch (error) {
