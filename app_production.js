@@ -45,7 +45,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   }
 
   // Replace with your group's ID (ensure it's an integer)
-  const targetGroupId = 4522993194;
+  const targetGroupId = 1001754775046;
 
   // Function to send a message to the Telegram group
   async function sendTelegramMessage(message) {
