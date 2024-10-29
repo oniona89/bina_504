@@ -74,6 +74,31 @@ function parseSignal(message) {
 }
 
 
+// Function to save the parsed signal data to a file
+function saveSignalToFile(signalData) {
+  const date = new Date();
+  const formattedDate = date.toISOString(); // e.g., "2024-10-26T14:30:00.000Z"
+  const filePath = path.join(__dirname, 'signals.txt');
+
+  // Create the signal entry with formatted data
+  const signalEntry = `${formattedDate} - Signal:\n` +
+                      `Position: ${signalData.position}\n` +
+                      `Symbol: ${signalData.symbol}\n` +
+                      `Entry Price Range: ${signalData.entryPriceRange}\n` +
+                      `Targets: ${signalData.targets.join(', ')}\n` +
+                      `Leverage: x${signalData.leverage}\n` +
+                      `Stop Loss: ${signalData.stopLoss}\n\n`;
+
+  // Append the signal entry to the file
+  fs.appendFile(filePath, signalEntry, (err) => {
+    if (err) {
+      console.error('Error saving signal:', err);
+    } else {
+      console.log('Signal saved successfully.');
+    }
+  });
+}
+
 module.exports = {
   parseSignal,
   saveSignalToFile
