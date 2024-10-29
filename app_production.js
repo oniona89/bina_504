@@ -58,14 +58,15 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     }
   }
 
-  // Health check function to be sent every 5 minutes
-  function sendHealthCheck() {
+  // Health check function to be sent every 10 seconds
+  async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
-    sendTelegramMessage(healthMessage);
+    console.log(`Sending health check: ${healthMessage}`); // Log before sending
+    await sendTelegramMessage(healthMessage); // Await to handle async issues
   }
 
-  // Set an interval to send a health check every 5 minutes
-  setInterval(sendHealthCheck, 5 * 60 * 1000); // 300,000 ms = 5 minutes
+  // Set an interval to send a health check every 10 seconds for testing
+  setInterval(sendHealthCheck, 10 * 1000); // 10 seconds for testing
 
   // Log messages to a file and send to Telegram
   function logMessage(message) {
