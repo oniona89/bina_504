@@ -46,7 +46,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
 
   // Replace with your group's ID (ensure it's an integer)
   const targetGroupId = 1001754775046;
-  const log_output_group_id = 4522993194
+  const log_output_group_id = 4522993194;
 
   // Function to send a message to the Telegram group
   async function sendTelegramMessage(message) {
@@ -81,24 +81,27 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       const groupId = Number(update.message.peerId.channelId) 
       || Number(update.message.peerId.chatId);
 
-      // Check if it's from the right group
-      if (groupId === targetGroupId || log_output_group_id) {
+      // Check if the message is from either targetGroupId or log_output_group_id
+      if (groupId === targetGroupId || groupId === log_output_group_id) {
         console.log('New message from group:', message);
 
-        // Log the message only if it's from the target group
+        // Log the message and forward it to log_output_group_id
         logMessage(`Received message from group: ${message}`);
 
-        // Attempt to parse the message if it's a signal
-        const signalData = parseSignal(message);
-        if (signalData && signalData.position) {
-          console.log('Parsed Signal Data:', signalData);
+        // If the message is from targetGroupId, process it as a signal
+        if (groupId === targetGroupId) {
+          // Attempt to parse the message if it's a signal
+          const signalData = parseSignal(message);
+          if (signalData && signalData.position) {
+            console.log('Parsed Signal Data:', signalData);
 
-          // Log parsed signal data and save it
-          logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`);
-          saveSignalToFile(signalData);
+            // Log parsed signal data and save it
+            logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`);
+            saveSignalToFile(signalData);
 
-          // Execute the trade using Binance API
-          executeTrade(signalData);
+            // Execute the trade using Binance API
+            executeTrade(signalData);
+          }
         }
       }
     }
