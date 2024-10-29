@@ -45,19 +45,33 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   }
 
   // Replace with your group's ID (ensure it's an integer)
-  const targetGroupId = 1001754775046;
+  const targetGroupId = 4522993194;
 
-  // Log messages to a file
+  // Function to send a message to the Telegram group
+  async function sendTelegramMessage(message) {
+    try {
+      await client.sendMessage(targetGroupId, { message });
+      console.log(`Sent message to Telegram group: ${message}`);
+    } catch (error) {
+      console.error('Failed to send message to Telegram:', error);
+    }
+  }
+
+  // Log messages to a file and send to Telegram
   function logMessage(message) {
     const date = new Date();
     const formattedDate = date.toISOString();
-    const logEntry = `${formattedDate} - Received Message: ${message}\n\n`;
+    const logEntry = `${formattedDate} - ${message}\n\n`;
 
+    // Save the log to the file
     fs.appendFile(logFilePath, logEntry, (err) => {
       if (err) {
         console.error('Error logging message:', err);
       }
     });
+
+    // Send the log to Telegram
+    sendTelegramMessage(message);
   }
 
   client.addEventHandler((update) => {
@@ -71,14 +85,15 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
         console.log('New message from group:', message);
 
         // Log the message only if it's from the target group
-        logMessage(message);
+        logMessage(`Received message from group: ${message}`);
 
         // Attempt to parse the message if it's a signal
         const signalData = parseSignal(message);
         if (signalData && signalData.position) {
           console.log('Parsed Signal Data:', signalData);
 
-          // Save the parsed data to signals.txt
+          // Log parsed signal data and save it
+          logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`);
           saveSignalToFile(signalData);
 
           // Execute the trade using Binance API
