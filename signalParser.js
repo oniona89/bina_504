@@ -9,7 +9,7 @@ function parseSignal(message) {
   const symbolPattern = /(\w+\/USDT)/i;
   const entryPricePattern = /price\s?\$?([\d.]+)(?:-(\d+.\d+))?/i;
   const targetPattern = /🎯\$?([\d.]+)/g;
-  const leveragePattern = /Leverage\s*:\s*(\d+)\s*x?\s*-\s*(\d+)\s*x?|(\d+)\s*x?/i;
+  const leveragePattern = /Leverage\s*:\s*(\d+)\s*x?\s*(?:-\s*(\d+)\s*x?)?/i;
   const stopLossPattern = /(?:STOP[-\s]?LOSS|⛔️)\s*:\s*\$?([\d.]+)/i;
 
   // Extract position
@@ -44,12 +44,12 @@ function parseSignal(message) {
   signalData.targets = targets;
   console.log(`Parsed Targets: ${signalData.targets.join(', ') || 'None'}`);
 
-  // Extract leverage
+  // Simplified leverage extraction
   const leverageMatch = message.match(leveragePattern);
   if (leverageMatch) {
-    const minLeverage = leverageMatch[1] ? parseInt(leverageMatch[1], 10) : parseInt(leverageMatch[3], 10);
+    const minLeverage = parseInt(leverageMatch[1], 10);
     const maxLeverage = leverageMatch[2] ? parseInt(leverageMatch[2], 10) : minLeverage;
-    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2); // Average of the range or single value
+    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2);
     console.log(`Parsed Leverage: x${signalData.leverage}`);
   } else {
     console.log('Leverage not found or could not be parsed.');
@@ -68,10 +68,9 @@ function parseSignal(message) {
 // Function to save the parsed signal data to a file
 function saveSignalToFile(signalData) {
   const date = new Date();
-  const formattedDate = date.toISOString(); // e.g., "2024-10-26T14:30:00.000Z"
+  const formattedDate = date.toISOString();
   const filePath = path.join(__dirname, 'signals.txt');
 
-  // Create the signal entry with formatted data
   const signalEntry = `${formattedDate} - Signal:\n` +
                       `Position: ${signalData.position}\n` +
                       `Symbol: ${signalData.symbol}\n` +
@@ -80,7 +79,6 @@ function saveSignalToFile(signalData) {
                       `Leverage: x${signalData.leverage}\n` +
                       `Stop Loss: ${signalData.stopLoss}\n\n`;
 
-  // Append the signal entry to the file
   fs.appendFile(filePath, signalEntry, (err) => {
     if (err) {
       console.error('Error saving signal:', err);
