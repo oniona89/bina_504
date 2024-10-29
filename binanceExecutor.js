@@ -47,53 +47,50 @@ async function executeTrade(signalData) {
   try {
     const { position, symbol, entryPriceRange, leverage, targets, stopLoss } = signalData;
 
-    // Prepare trading parameters
     const orderSide = position === 'LONG' ? 'BUY' : 'SELL';
     const [minPrice, maxPrice] = entryPriceRange.split('-').map(Number);
     const firstTarget = targets[0];
     const stopLossPrice = stopLoss;
 
-    logMessage(`Received trading signal for ${symbol}: ${position} with target range ${minPrice} - ${maxPrice}`);
-
-    // Poll the current price every 5 seconds
     const tradingSymbol = symbol.replace('/', '');
-    logMessage(`Starting to monitor price for ${tradingSymbol} every 5 seconds to catch the range...`);
+    console.log(`Received trading signal for ${symbol}: ${position} with target range ${minPrice} - ${maxPrice}`);
 
-    const checkPriceInterval = setInterval(async () => {
-      const currentPrice = await getCurrentPrice(tradingSymbol);
-    
-      if (
-        (minPrice >= maxPrice && currentPrice <= minPrice && currentPrice >= maxPrice) || // Higher to lower range
-        (minPrice <= maxPrice && currentPrice >= minPrice && currentPrice <= maxPrice)    // Lower to higher range
-      ) {
-        // Price is within the desired range, proceed with trade
-        clearInterval(checkPriceInterval);
-        logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`);
-    
-        // Calculate the investment amount (e.g., $10)
-        const investment = 30;
-        const quantity = (investment / currentPrice).toFixed(2); // Adjust precision based on the trading pair
-    
-        // Set leverage for futures trading
-        await setLeverage(tradingSymbol, leverage);
-    
-        // Place the market order on Futures
-        const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
-    
-        // Log the market order result
-        if (order) {
-          logMessage(`Market order executed successfully: ${JSON.stringify(order)}`);
-        }
-    
-        // Set Take-Profit and Stop-Loss orders
-        await setStopLossAndTakeProfit(tradingSymbol, orderSide, quantity, stopLossPrice, firstTarget);
-      } else {
-        logMessage(`Current price of ${tradingSymbol} is ${currentPrice}, not in range.`);
+    const currentPrice = await getCurrentPrice(tradingSymbol);
+
+    if (currentPrice >= minPrice && currentPrice <= maxPrice) {
+      console.log(`Price is in range: ${currentPrice}. Executing ${position} order.`);
+
+      // Set leverage
+      await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
+
+      // Calculate investment and adjust quantity precision
+      const investment = 30;
+      const quantity = (investment / currentPrice).toFixed(getPrecision(tradingSymbol));
+
+      const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
+      if (order) {
+        console.log(`Market order executed successfully: ${JSON.stringify(order)}`);
       }
-    }, 5000); // Check every 5 seconds
+
+      // Set Take-Profit and Stop-Loss
+      await setStopLossAndTakeProfit(tradingSymbol, orderSide, quantity, stopLossPrice, firstTarget);
+    } else {
+      console.log(`Current price of ${tradingSymbol} is ${currentPrice}, not in range.`);
+    }
   } catch (error) {
-    logMessage(`Error executing trade: ${error.message}`);
+    console.log(`Error executing trade: ${error.message}`);
   }
+}
+
+// Function to adjust quantity precision based on symbol
+function getPrecision(symbol) {
+  // Define precision for commonly traded symbols (e.g., FIL/USDT precision is 2)
+  const precisionMap = {
+    FILUSDT: 2,
+    BTCUSDT: 3,
+    ETHUSDT: 3,
+  };
+  return precisionMap[symbol] || 2; // Default precision if not specified
 }
 
 // Function to set the leverage for a futures trade
