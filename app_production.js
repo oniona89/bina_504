@@ -45,13 +45,23 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   }
 
   // Group IDs
-  const targetGroupId = 1001754775046;
-  const log_output_group_id = 4522993194;
+  const targetGroupId = -1001754775046; // Replace with your actual target group ID
+  const log_output_group_username = -4522993194; // Use the actual username or invite link
+
+  // Load the group entity for log output dynamically
+  let logOutputGroupEntity;
+  try {
+    logOutputGroupEntity = await client.getEntity(log_output_group_username);
+    console.log('Log output group entity loaded successfully.');
+  } catch (error) {
+    console.error('Error loading log output group entity:', error);
+    return;
+  }
 
   // Function to send a message to the log output group
   async function sendTelegramMessage(message) {
     try {
-      await client.sendMessage(log_output_group_id, { message });
+      await client.sendMessage(logOutputGroupEntity, { message });
       console.log(`Sent message to Telegram group: ${message}`);
     } catch (error) {
       console.error('Failed to send message to Telegram:', error);
@@ -61,12 +71,12 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   // Health check function to be sent every 10 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
-    console.log(`Sending health check: ${healthMessage}`); // Log before sending
+    console.log(`Sending health check: ${healthMessage}`);
     await sendTelegramMessage(healthMessage); // Await to handle async issues
   }
 
   // Set an interval to send a health check every 10 seconds for testing
-  setInterval(sendHealthCheck, 10 * 1000); // 10 seconds for testing
+  setInterval(sendHealthCheck, 30 * 1000); // 10 seconds for testing
 
   // Log messages to a file and send to Telegram
   function logMessage(message) {
@@ -92,7 +102,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       || Number(update.message.peerId.chatId);
 
       // Check if the message is from either targetGroupId or log_output_group_id
-      if (groupId === targetGroupId || groupId === log_output_group_id) {
+      if (groupId === targetGroupId || groupId === log_output_group_username) {
         console.log('New message from group:', message);
 
         // Log the message and forward it to log_output_group_id
