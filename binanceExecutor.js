@@ -64,9 +64,10 @@ async function executeTrade(signalData) {
       await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
 
       // Round investment to 2 decimal places for USDT pairs
-      const investment = parseFloat(30);
-      const quantity = (investment / currentPrice).toFixed(4);
-
+      const investment = 30;
+      const quantity = (investment / currentPrice).toFixed(2);
+      console.log(`investment: `, investment)
+      console.log(`quantity: `, quantity)
       const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
       if (order) {
         console.log(`Market order executed successfully: ${JSON.stringify(order)}`);
