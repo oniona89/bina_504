@@ -63,8 +63,8 @@ async function executeTrade(signalData) {
       // Set leverage
       await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
 
-      // Calculate investment and adjust quantity precision
-      const investment = 30;
+      // Round investment to 2 decimal places for USDT pairs
+      const investment = parseFloat(30.0.toFixed(2));
       const quantity = (investment / currentPrice).toFixed(getPrecision(tradingSymbol));
 
       const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
@@ -82,16 +82,6 @@ async function executeTrade(signalData) {
   }
 }
 
-// Function to adjust quantity precision based on symbol
-function getPrecision(symbol) {
-  // Define precision for commonly traded symbols (e.g., FIL/USDT precision is 2)
-  const precisionMap = {
-    FILUSDT: 2,
-    BTCUSDT: 3,
-    ETHUSDT: 3,
-  };
-  return precisionMap[symbol] || 2; // Default precision if not specified
-}
 
 // Function to set the leverage for a futures trade
 async function setLeverage(symbol, leverage) {
