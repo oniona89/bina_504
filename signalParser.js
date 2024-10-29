@@ -9,7 +9,7 @@ function parseSignal(message) {
   const symbolPattern = /(\w+\/USDT)/i;
   const entryPricePattern = /price\s?\$?([\d.]+)(?:-(\d+.\d+))?/i;
   const targetPattern = /🎯\$?([\d.]+)/g;
-  const leveragePattern = /Leverage\s*:\s*(\d+)(?:x)?(?:-(\d+)(?:x)?)?/i;
+  const leveragePattern = /Leverage\s*:\s*(\d+)\s*x?\s*-\s*(\d+)\s*x?|(\d+)\s*x?/i;
   const stopLossPattern = /(?:STOP[-\s]?LOSS|⛔️)\s*:\s*\$?([\d.]+)/i;
 
   // Extract position
@@ -47,9 +47,9 @@ function parseSignal(message) {
   // Extract leverage
   const leverageMatch = message.match(leveragePattern);
   if (leverageMatch) {
-    const minLeverage = parseInt(leverageMatch[1], 10);
+    const minLeverage = leverageMatch[1] ? parseInt(leverageMatch[1], 10) : parseInt(leverageMatch[3], 10);
     const maxLeverage = leverageMatch[2] ? parseInt(leverageMatch[2], 10) : minLeverage;
-    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2);
+    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2); // Average of the range or single value
     console.log(`Parsed Leverage: x${signalData.leverage}`);
   } else {
     console.log('Leverage not found or could not be parsed.');
@@ -64,8 +64,6 @@ function parseSignal(message) {
 
   return signalData;
 }
-
-
 
 // Function to save the parsed signal data to a file
 function saveSignalToFile(signalData) {
