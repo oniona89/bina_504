@@ -9,8 +9,8 @@ function parseSignal(message) {
   const symbolPattern = /(\w+\/USDT)/i;
   const entryPricePattern = /price\s?\$?([\d.]+)(?:-(\d+.\d+))?/i; // Handle single price or range
   const targetPattern = /🎯\$?([\d.]+)/g;
-  const leveragePattern = /Leverage\s*:\s*(\d+)(?:x)?-(\d+)(?:x)?/i; // Handle leverage range
-  const stopLossPattern = /(?:STOP[-\s]?LOSS|⛔️)\s*:\s*\$?([\d.]+)/i; // Updated stop-loss pattern
+  const leveragePattern = /Leverage\s*:\s*(\d+)(?:x)?(?:-(\d+)(?:x)?)?/i; // Updated leverage pattern
+  const stopLossPattern = /(?:STOP[-\s]?LOSS|⛔️)\s*:\s*\$?([\d.]+)/i;
 
   // Extract position type (LONG or SHORT)
   const positionMatch = message.match(positionPattern);
@@ -50,12 +50,12 @@ function parseSignal(message) {
   signalData.targets = targets;
   console.log(`Parsed Targets: ${signalData.targets.join(', ') || 'None'}`);
 
-  // Extract leverage and calculate the average if it's a range
+  // Extract leverage and handle both single value and range
   const leverageMatch = message.match(leveragePattern);
   if (leverageMatch) {
     const minLeverage = parseInt(leverageMatch[1], 10);
-    const maxLeverage = parseInt(leverageMatch[2], 10);
-    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2); // Average of the range
+    const maxLeverage = leverageMatch[2] ? parseInt(leverageMatch[2], 10) : minLeverage; // Use minLeverage if max is not provided
+    signalData.leverage = Math.round((minLeverage + maxLeverage) / 2); // Average of the range or single value
     console.log(`Parsed Leverage: x${signalData.leverage}`);
   } else {
     console.log('Leverage not found.');
@@ -73,30 +73,6 @@ function parseSignal(message) {
   return signalData;
 }
 
-// Function to save the parsed signal data to a file
-function saveSignalToFile(signalData) {
-  const date = new Date();
-  const formattedDate = date.toISOString(); // e.g., "2024-10-26T14:30:00.000Z"
-  const filePath = path.join(__dirname, 'signals.txt');
-
-  // Create the signal entry with formatted data
-  const signalEntry = `${formattedDate} - Signal:\n` +
-                      `Position: ${signalData.position}\n` +
-                      `Symbol: ${signalData.symbol}\n` +
-                      `Entry Price Range: ${signalData.entryPriceRange}\n` +
-                      `Targets: ${signalData.targets.join(', ')}\n` +
-                      `Leverage: x${signalData.leverage}\n` +
-                      `Stop Loss: ${signalData.stopLoss}\n\n`;
-
-  // Append the signal entry to the file
-  fs.appendFile(filePath, signalEntry, (err) => {
-    if (err) {
-      console.error('Error saving signal:', err);
-    } else {
-      console.log('Signal saved successfully.');
-    }
-  });
-}
 
 module.exports = {
   parseSignal,
