@@ -83,6 +83,17 @@ async function executeTrade(signalData) {
 }
 
 
+// Function to adjust quantity precision based on symbol
+function getPrecision(symbol) {
+  // Define precision for commonly traded symbols (e.g., FIL/USDT precision is 2)
+  const precisionMap = {
+    FILUSDT: 2,
+    BTCUSDT: 3,
+    ETHUSDT: 3,
+  };
+  return precisionMap[symbol] || 2; // Default precision if not specified
+}
+
 // Function to set the leverage for a futures trade
 async function setLeverage(symbol, leverage) {
   try {
