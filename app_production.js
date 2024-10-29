@@ -82,7 +82,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       || Number(update.message.peerId.chatId);
 
       // Check if it's from the right group
-      if (groupId === (targetGroupId || log_output_group_id)) {
+      if (groupId === targetGroupId || log_output_group_id) {
         console.log('New message from group:', message);
 
         // Log the message only if it's from the target group
