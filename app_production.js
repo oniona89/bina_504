@@ -44,11 +44,11 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     console.log('Session saved to file.');
   }
 
-  // Replace with your group's ID (ensure it's an integer)
+  // Group IDs
   const targetGroupId = 1001754775046;
   const log_output_group_id = 4522993194;
 
-  // Function to send a message to the Telegram group
+  // Function to send a message to the log output group
   async function sendTelegramMessage(message) {
     try {
       await client.sendMessage(log_output_group_id, { message });
@@ -57,6 +57,15 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       console.error('Failed to send message to Telegram:', error);
     }
   }
+
+  // Health check function to be sent every 5 minutes
+  function sendHealthCheck() {
+    const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
+    sendTelegramMessage(healthMessage);
+  }
+
+  // Set an interval to send a health check every 5 minutes
+  setInterval(sendHealthCheck, 5 * 60 * 1000); // 300,000 ms = 5 minutes
 
   // Log messages to a file and send to Telegram
   function logMessage(message) {
