@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { parseSignal, saveSignalToFile } = require('./signalParser');
 const { executeTrade } = require('./binanceExecutor');
+const { group } = require('console');
 
 // Replace with your API ID and Hash from my.telegram.org
 const apiId = 18030888;
@@ -100,10 +101,10 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       const message = update.message.message;
       const groupId = Number(update.message.peerId.channelId) 
       || Number(update.message.peerId.chatId);
-
       // Check if the message is from either targetGroupId or log_output_group_id
-      if (groupId === targetGroupId || groupId === log_output_group_username) {
+      if (groupId * -1 === targetGroupId || groupId * -1 === log_output_group_username) {
         console.log('New message from group:', message);
+        
 
         // Log the message and forward it to log_output_group_id
         logMessage(`Received message from group: ${message}`);
