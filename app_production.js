@@ -3,9 +3,9 @@ const { StringSession } = require('telegram/sessions');
 const input = require('input');
 const fs = require('fs');
 const path = require('path');
-const { parseSignal, saveSignalToFile } = require('./signalParser');
+const { parseSignalUsingChatGPT } = require('./parseSignalGPT'); // Import the new module
+const { saveSignalToFile } = require('./signalParser'); // Only for saving to file
 const { executeTrade } = require('./binanceExecutor');
-const { group } = require('console');
 
 // Replace with your API ID and Hash from my.telegram.org
 const apiId = 18030888;
@@ -77,8 +77,8 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     await sendTelegramMessage(healthMessage); // Await to handle async issues
   }
 
-  // Set an interval to send a health check every 10 seconds for testing
-  setInterval(sendHealthCheck, 30 * 1000); // 10 seconds for testing
+  // Set an interval to send a health check every 30 seconds for testing
+  setInterval(sendHealthCheck, 30 * 1000);
 
   // Log messages to a file and send to Telegram
   function logMessage(message) {
@@ -97,25 +97,18 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     sendTelegramMessage(message);
   }
 
-  client.addEventHandler((update) => {
+  client.addEventHandler(async (update) => {
     if (update && update.message && update.message.message) {
       const message = update.message.message;
-      const groupId = Number(update.message.peerId.channelId) 
-      || Number(update.message.peerId.chatId);
+      const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
+
       // Check if the message is from either targetGroupId or log_output_group_id
-      if (groupId * -1 === targetGroupId || groupId * -1 === log_output_group_username 
-        || groupId * -1 === test_bina_2_crypto_mock) {
+      if ([targetGroupId, log_output_group_username, test_bina_2_crypto_mock].includes(groupId * -1)) {
         console.log('New message from group:', message);
-        
 
-        // Log the message and forward it to log_output_group_id
-        //logMessage(`Received message from group: ${message}`);
-
-        // If the message is from targetGroupId, process it as a signal
-        if (groupId * -1  === targetGroupId ||
-           groupId * -1 === test_bina_2_crypto_mock) { // fix all the -1 
-          // Attempt to parse the message if it's a signal
-          const signalData = parseSignal(message);
+        // If the message is from targetGroupId or mock, process it as a signal
+        if (groupId * -1 === targetGroupId || groupId * -1 === test_bina_2_crypto_mock) {
+          const signalData = await parseSignalUsingChatGPT(message); // Parse using ChatGPT
           if (signalData && signalData.position) {
             console.log('Parsed Signal Data:', signalData);
 
