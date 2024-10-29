@@ -10,7 +10,7 @@ function parseSignal(message) {
   const entryPricePattern = /price\s?\$?([\d.]+)(?:-(\d+.\d+))?/i; // Handle single price or range
   const targetPattern = /🎯\$?([\d.]+)/g;
   const leveragePattern = /Leverage\s*:\s*(\d+)(?:x)?-(\d+)(?:x)?/i; // Handle leverage range
-  const stopLossPattern = /STOP-LOSS\s?\$?([\d.]+)/i;
+  const stopLossPattern = /(?:STOP[-\s]?LOSS|⛔️)\s*:\s*\$?([\d.]+)/i; // Updated stop-loss pattern
 
   // Extract position type (LONG or SHORT)
   const positionMatch = message.match(positionPattern);
