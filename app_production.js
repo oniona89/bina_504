@@ -48,6 +48,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   // Group IDs
   const targetGroupId = -1001754775046; // Replace with your actual target group ID
   const log_output_group_username = -4522993194; // Use the actual username or invite link
+  const test_bina_2_crypto_mock = -4578127979; 
 
   // Load the group entity for log output dynamically
   let logOutputGroupEntity;
@@ -102,15 +103,17 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       const groupId = Number(update.message.peerId.channelId) 
       || Number(update.message.peerId.chatId);
       // Check if the message is from either targetGroupId or log_output_group_id
-      if (groupId * -1 === targetGroupId || groupId * -1 === log_output_group_username) {
+      if (groupId * -1 === targetGroupId || groupId * -1 === log_output_group_username 
+        || groupId * -1 === test_bina_2_crypto_mock) {
         console.log('New message from group:', message);
         
 
         // Log the message and forward it to log_output_group_id
-        logMessage(`Received message from group: ${message}`);
+        //logMessage(`Received message from group: ${message}`);
 
         // If the message is from targetGroupId, process it as a signal
-        if (groupId === targetGroupId) {
+        if (groupId * -1  === targetGroupId ||
+           groupId * -1 === test_bina_2_crypto_mock) { // fix all the -1 
           // Attempt to parse the message if it's a signal
           const signalData = parseSignal(message);
           if (signalData && signalData.position) {
