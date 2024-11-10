@@ -1,0 +1,12 @@
+2024-11-10T16:00:44.009Z - Parsed signal data: 
+
+2024-11-10T16:00:44.011Z - Parsed Signal Data: {"position":"LONG","symbol":"ARB/USDT","entryPriceRange":"0.5949-0.6305","targets":[0.65,0.6789,0.7029,0.745,0.789],"leverage":20,"stopLoss":0.556}
+
+2024-11-10T16:01:32.426Z - Parsed signal data: 
+
+2024-11-10T16:01:32.427Z - Parsed Signal Data: {"position":"LONG","symbol":"MANA/USDT","entryPriceRange":"0.2870-0.3361","targets":[0.3658,0.398,0.4456,0.489,0.5349],"leverage":20,"stopLoss":0.24}
+
+2024-11-10T16:04:07.352Z - Parsed Signal Data: {"position":"LONG","symbol":"ZEC/USDT","entryPriceRange":"37.55-37.67","targets":[37.85835,38.0467,38.4234,38.8001,39.1768,39.5535,39.9302,40.3069],"leverage":20,"stopLoss":34.6564}
+
+2024-11-10T16:04:07.349Z - Parsed signal data: 
+

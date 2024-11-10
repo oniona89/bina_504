@@ -1,0 +1,58 @@
+2024-11-10T16:01:02.421Z - Fetched current price for ARBUSDT: 0.65
+2024-11-10T16:01:24.652Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:01:39.660Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:01:54.690Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:01:55.496Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:02:06.751Z - Fetched current price for ARBUSDT: 0.65
+2024-11-10T16:02:06.759Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:02:18.187Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:02:21.422Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:02:32.890Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:02:42.735Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:02:47.881Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:02:50.967Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:03:03.591Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:03:12.696Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:03:24.718Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:03:27.758Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:03:39.712Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:03:42.731Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:03:54.678Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:03:55.527Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:04:02.447Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:04:02.868Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:04:17.500Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:04:18.026Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:04:27.042Z - Fetched current price for ZECUSDT: 46.94
+2024-11-10T16:04:29.549Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:04:32.919Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:04:48.037Z - Error fetching current price for ZECUSDT: fetch failed
+2024-11-10T16:04:48.779Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:04:58.127Z - Error fetching current price for MANAUSDT: fetch failed
+2024-11-10T16:04:59.868Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:05:02.720Z - Error fetching current price for ZECUSDT: fetch failed
+2024-11-10T16:05:03.111Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:05:14.567Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:05:14.825Z - Fetched current price for ZECUSDT: 46.93
+2024-11-10T16:05:17.893Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:05:33.029Z - Error fetching current price for ZECUSDT: fetch failed
+2024-11-10T16:05:33.393Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:05:37.847Z - Fetched current price for ZECUSDT: 46.97
+2024-11-10T16:05:39.600Z - Error fetching current price for ARBUSDT: fetch failed
+2024-11-10T16:05:52.757Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:05:52.759Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:05:52.885Z - Fetched current price for ZECUSDT: 47.00
+2024-11-10T16:05:59.872Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:06:03.121Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:06:11.152Z - Fetched current price for ZECUSDT: 46.96
+2024-11-10T16:06:14.689Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:06:18.040Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:06:26.068Z - Fetched current price for ZECUSDT: 46.93
+2024-11-10T16:06:29.570Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:06:33.149Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:06:41.266Z - Fetched current price for ZECUSDT: 46.89
+2024-11-10T16:06:44.660Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:06:47.940Z - Fetched current price for MANAUSDT: 0.35
+2024-11-10T16:06:56.241Z - Fetched current price for ZECUSDT: 46.91
+2024-11-10T16:06:59.783Z - Fetched current price for ARBUSDT: 0.64
+2024-11-10T16:07:03.081Z - Fetched current price for MANAUSDT: 0.35

@@ -52,113 +52,119 @@ async function executeTrade(signalData) {
     const firstTarget = targets[0];
     const stopLossPrice = stopLoss;
 
-    const tradingSymbol = symbol.replace('/', '');
+    const tradingSymbol = symbol.replace('/', ''); // Strip the '/' for Binance pairs
     console.log(`Received trading signal for ${symbol}: ${position} with target range ${minPrice} - ${maxPrice}`);
 
-    const currentPrice = await getCurrentPrice(tradingSymbol);
+    // Create a mechanism to constantly check the price
+    const priceCheckInterval = 15000; // 5 seconds
+    let interval;
 
-    if (currentPrice >= minPrice && currentPrice <= maxPrice) {
-      console.log(`Price is in range: ${currentPrice}. Executing ${position} order.`);
+    // This function will be called repeatedly to check the price
+    const checkPriceAndExecute = async () => {
+      const currentPrice = await getCurrentPrice(tradingSymbol);
 
-      // Set leverage
-      await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
+      if (currentPrice !== null) {
+        console.log(`Current price of ${tradingSymbol} is ${currentPrice}`);
 
-      // Round investment to 2 decimal places for USDT pairs
-      const investment = 30;
-      const quantity = (investment / currentPrice).toFixed(1);
-      console.log(`investment: `, investment)
-      console.log(`quantity: `, quantity)
-      const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
-      if (order) {
-        console.log(`Market order executed successfully: ${JSON.stringify(order)}`);
+        if (currentPrice >= minPrice && currentPrice <= maxPrice) {
+          console.log(`Price is in range: ${currentPrice}. Executing ${position} order.`);
+
+          // Set leverage
+          await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
+
+          // Round investment to 2 decimal places for USDT pairs
+          const investment = 30;
+          const quantity = (investment / currentPrice).toFixed(1);
+          console.log(`Investment: ${investment}`);
+          console.log(`Quantity: ${quantity}`);
+
+          // Place the market order
+          const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
+          if (order) {
+            console.log(`Market order executed successfully: ${JSON.stringify(order)}`);
+            // Set Stop-Loss and Take-Profit after the order is executed
+            await setStopLossAndTakeProfit(tradingSymbol, orderSide, quantity, stopLossPrice, firstTarget);
+
+            // Stop checking after executing the trade
+            clearInterval(interval);
+          }
+        } else {
+          console.log(`Price of ${tradingSymbol} is ${currentPrice}, not in range.`);
+        }
       }
+    };
 
-      // Set Take-Profit and Stop-Loss
-      await setStopLossAndTakeProfit(tradingSymbol, orderSide, quantity, stopLossPrice, firstTarget);
-    } else {
-      console.log(`Current price of ${tradingSymbol} is ${currentPrice}, not in range.`);
-    }
+    // Start the interval to check the price every 15 seconds
+    interval = setInterval(checkPriceAndExecute, priceCheckInterval);
+
   } catch (error) {
-    console.log(`Error executing trade: ${error.message}`);
+    console.error(`Error executing trade for ${signalData.symbol}: ${error.message}`);
+    logMessage(`Error executing trade for ${signalData.symbol}: ${error.message}`);
   }
 }
 
-
-// Function to adjust quantity precision based on symbol
-function getPrecision(symbol) {
-  // Define precision for commonly traded symbols (e.g., FIL/USDT precision is 2)
-  const precisionMap = {
-    FILUSDT: 2,
-    BTCUSDT: 3,
-    ETHUSDT: 3,
-  };
-  return precisionMap[symbol] || 2; // Default precision if not specified
-}
-
-// Function to set the leverage for a futures trade
+// Function to set leverage for a symbol
 async function setLeverage(symbol, leverage) {
   try {
-    await binanceClient.futuresLeverage({
-      symbol,
-      leverage: leverage || 1, // Default to 1 if no leverage specified
+    const response = await binanceClient.futuresLeverage({
+      symbol: symbol,
+      leverage: leverage
     });
-    logMessage(`Leverage set to x${leverage} for ${symbol}`);
+    logMessage(`Leverage set for ${symbol} to ${leverage}`);
+    return response;
   } catch (error) {
     logMessage(`Error setting leverage for ${symbol}: ${error.message}`);
+    console.error(error);
   }
 }
 
-// Function to place a market order on Binance Futures
+// Function to place a futures market order
 async function placeFuturesMarketOrder(symbol, side, quantity) {
   try {
     const order = await binanceClient.futuresOrder({
-      symbol,
-      side,
+      symbol: symbol,
+      side: side,
       type: 'MARKET',
-      quantity,
+      quantity: quantity,
     });
-    logMessage(`Placed a ${side} market order for ${quantity} ${symbol}`);
+    logMessage(`Placed order: ${JSON.stringify(order)}`);
     return order;
   } catch (error) {
-    logMessage(`Error placing market order for ${symbol}: ${error.message}`);
-    return null;
+    logMessage(`Error placing order for ${symbol}: ${error.message}`);
+    console.error(error);
   }
 }
 
-// Function to set Stop-Loss and Take-Profit orders for Binance Futures
+// Function to set stop-loss and take-profit orders
 async function setStopLossAndTakeProfit(symbol, side, quantity, stopLossPrice, takeProfitPrice) {
   try {
-    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
-
-    // Set the Take-Profit Market Order
-    await binanceClient.futuresOrder({
-      symbol,
-      side: oppositeSide,
-      type: 'TAKE_PROFIT_MARKET',
-      stopPrice: takeProfitPrice.toFixed(2),
-      quantity,
+    const stopLossOrder = await binanceClient.futuresOrder({
+      symbol: symbol,
+      side: side === 'BUY' ? 'SELL' : 'BUY',
+      type: 'STOP_MARKET',
+      stopPrice: stopLossPrice,
+      quantity: quantity,
     });
-    logMessage(`Take-Profit order set at ${takeProfitPrice} for ${symbol}`);
 
-    // Check if stopLossPrice is defined before placing Stop-Loss order
-    if (stopLossPrice !== undefined) {
-      // Set the Stop-Loss Market Order
-      await binanceClient.futuresOrder({
-        symbol,
-        side: oppositeSide,
-        type: 'STOP_MARKET',
-        stopPrice: stopLossPrice.toFixed(2),
-        quantity,
-      });
-      logMessage(`Stop-Loss order set at ${stopLossPrice} for ${symbol}`);
-    } else {
-      logMessage(`Stop-Loss order not set because stopLossPrice is undefined for ${symbol}`);
-    }
+    const takeProfitOrder = await binanceClient.futuresOrder({
+      symbol: symbol,
+      side: side === 'BUY' ? 'SELL' : 'BUY',
+      type: 'TAKE_PROFIT_MARKET',
+      stopPrice: takeProfitPrice,
+      quantity: quantity,
+    });
+
+    logMessage(`Stop-Loss and Take-Profit orders set: StopLoss: ${stopLossPrice}, TakeProfit: ${takeProfitPrice}`);
   } catch (error) {
-    logMessage(`Error setting Stop-Loss/Take-Profit for ${symbol}: ${error.message}`);
+    logMessage(`Error setting Stop-Loss or Take-Profit for ${symbol}: ${error.message}`);
+    console.error(error);
   }
 }
 
 module.exports = {
   executeTrade,
+  getCurrentPrice,
+  setLeverage,
+  placeFuturesMarketOrder,
+  setStopLossAndTakeProfit,
 };

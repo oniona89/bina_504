@@ -46,7 +46,8 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   }
 
   // Group IDs
-  const targetGroupId = -1001754775046; // Replace with your actual target group ID
+  let targetGroupId;
+  const targetGroupName = '@Cryptosignals_Real1'; // Example signal group
   const log_output_group_username = -4522993194; // Use the actual username or invite link
   const test_bina_2_crypto_mock = -4578127979; 
 
@@ -60,6 +61,17 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     return;
   }
 
+  let targetGroupEntity;
+  try {
+    targetGroupEntity = await client.getEntity(targetGroupName);
+    console.log('Target group entity loaded successfully: ', targetGroupEntity);
+    console.log('Target group entity loaded successfully: ', targetGroupEntity.id * -1);
+    targetGroupId = targetGroupEntity.id * -1;
+  } catch (error) {
+    console.error('Error loading target group entity:', error);
+    return;
+  }
+
   // Function to send a message to the log output group
   async function sendTelegramMessage(message) {
     try {
@@ -70,7 +82,7 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     }
   }
 
-  // Health check function to be sent every 10 seconds
+  // Health check function to be sent every 30 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
     console.log(`Sending health check: ${healthMessage}`);
@@ -102,13 +114,14 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
       const message = update.message.message;
       const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
 
-      // Check if the message is from either targetGroupId or log_output_group_id
       if ([targetGroupId, log_output_group_username, test_bina_2_crypto_mock].includes(groupId * -1)) {
         console.log('New message from group:', message);
 
         // If the message is from targetGroupId or mock, process it as a signal
-        if (groupId * -1 === targetGroupId || groupId * -1 === test_bina_2_crypto_mock) {
+        if ((groupId * -1) === targetGroupId || (groupId * -1) === test_bina_2_crypto_mock) {
           const signalData = await parseSignalUsingChatGPT(message); // Parse using ChatGPT
+          logMessage("Parsed signal data: ", signalData);
+
           if (signalData && signalData.position) {
             console.log('Parsed Signal Data:', signalData);
 

@@ -4,50 +4,69 @@ require('dotenv').config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 async function parseSignalUsingChatGPT(message) {
-  const prompt = `Parse the following message and extract the signal data as JSON with these fields: 
-  - position: "LONG" or "SHORT"
-  - symbol: symbol format "XXX/USDT"
-  - entryPriceRange: price range in format "minPrice-maxPrice"
-  - targets: array of target prices
-  - leverage: integer representing leverage, average if a range
-  - stopLoss: stop loss price
-  
-Return only valid JSON data and nothing else.
-Message: ${message}`;
-
-  try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4', // or 'gpt-4-turbo' as appropriate
-        messages: [{ role: 'user', content: prompt }],
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const completion = response.data.choices[0].message.content;
-
-    // Try parsing the response as JSON
-    try {
-      const signalData = JSON.parse(completion);
-      console.log("Parsed Signal Data from ChatGPT:", signalData);
-      return signalData;
-    } catch (jsonError) {
-      console.error("Error parsing JSON from ChatGPT response:", jsonError);
-
-      // Fallback to basic data extraction if JSON parsing fails
-      const extractedData = extractSignalDataFromText(completion);
-      return extractedData;
-    }
-  } catch (error) {
-    console.error("Error fetching signal data from ChatGPT:", error.response ? error.response.data : error.message);
-    return null;
+  const prompt = `You are a trading assistant. Please parse the following signal message and extract the signal data in a JSON format with the following fields:
+  {
+    "position": "LONG" or "SHORT", // The position to take (LONG for buying, SHORT for selling)
+    "symbol": "symbol/USDT", // The trading pair, e.g. "BTC/USDT"
+    "entryPriceRange": "minPrice-maxPrice", // The acceptable price range for entry, e.g. "30000-30500"
+    "targets": [target1, target2, ...], // Array of target prices to reach for take-profit
+    "leverage": leverage, // Leverage for the trade, an integer (if a range, return the average leverage)
+    "stopLoss": stopLoss // The stop-loss price for the trade
   }
+  
+  Please make sure the output is strictly valid JSON, no extra text, only the JSON data.
+  If the data is incomplete or ambiguous, try your best to make reasonable assumptions.
+  Message: ${message}`;
+
+  // Retry logic parameters
+  const maxRetries = 3;
+  let attempt = 0;
+  let response;
+
+  while (attempt < maxRetries) {
+    try {
+      response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-4', // You can switch to 'gpt-4-turbo' if you prefer
+          messages: [{ role: 'user', content: prompt }],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      // Log the full response to inspect
+      console.log("Full response from OpenAI API:", response.data);
+
+      // Try parsing the response as JSON
+      const completion = response.data.choices[0].message.content.trim();
+
+      // Attempt to parse the response as valid JSON
+      try {
+        const signalData = JSON.parse(completion);
+        console.log("Parsed Signal Data from ChatGPT:", signalData);
+        return signalData;
+      } catch (jsonError) {
+        console.error("Error parsing JSON from ChatGPT response:", jsonError);
+        console.log("Received non-JSON response:", completion);
+      }
+
+      // If parsing failed, retry
+      attempt++;
+      console.log(`Retry attempt ${attempt}...`);
+    } catch (error) {
+      console.error("Error fetching signal data from OpenAI API:", error.response ? error.response.data : error.message);
+      attempt++;
+      console.log(`Retry attempt ${attempt}...`);
+    }
+  }
+
+  console.error("Failed to parse a valid JSON response after multiple attempts.");
+  return null;
 }
 
 // Fallback function to parse the response manually if JSON parsing fails
