@@ -3,8 +3,8 @@ const { StringSession } = require('telegram/sessions');
 const input = require('input');
 const fs = require('fs');
 const path = require('path');
-const { parseSignalUsingChatGPT } = require('./parseSignalGPT'); // Import the new module
-const { saveSignalToFile } = require('./signalParser'); // Only for saving to file
+const { parseSignalUsingChatGPT } = require('./parseSignalGPT');
+const { saveSignalToFile } = require('./signalParser');
 const { executeTrade } = require('./binanceExecutor');
 
 // Replace with your API ID and Hash from my.telegram.org
@@ -13,7 +13,7 @@ const apiHash = 'cba4b1a292d9cb0800e953b94cd76654';
 
 // Log file paths
 const logFilePath = path.join(__dirname, 'log.txt');
-const sessionFilePath = path.join(__dirname, 'session.txt'); // File to store the session string
+const sessionFilePath = path.join(__dirname, 'session.txt');
 
 // Load the session from the file if it exists
 let sessionString = '';
@@ -22,7 +22,7 @@ if (fs.existsSync(sessionFilePath)) {
   console.log('Session loaded from file.');
 }
 
-const stringSession = new StringSession(sessionString); // Initialize the session with saved data if available
+const stringSession = new StringSession(sessionString);
 
 (async () => {
   const client = new TelegramClient(stringSession, apiId, apiHash, {
@@ -46,13 +46,15 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   }
 
   // Group IDs
-  let targetGroupId;
-  const targetGroupName = '@Cryptosignals_Real1'; // Example signal group
-  const log_output_group_username = -4522993194; // Use the actual username or invite link
-  const test_bina_2_crypto_mock = -4578127979; 
+  let targetGroupId, veeAnalysisGroupId;
+  const targetGroupName = '@Cryptosignals_Real1';
+  const veeAnalysisGroupName = '@veeanalysis';
+  const log_output_group_username = -4522993194;
+  const test_bina_2_crypto_mock = -4578127979;
 
-  // Load the group entity for log output dynamically
+  // Load entities for the target groups
   let logOutputGroupEntity;
+
   try {
     logOutputGroupEntity = await client.getEntity(log_output_group_username);
     console.log('Log output group entity loaded successfully.');
@@ -61,14 +63,21 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     return;
   }
 
-  let targetGroupEntity;
   try {
-    targetGroupEntity = await client.getEntity(targetGroupName);
-    console.log('Target group entity loaded successfully: ', targetGroupEntity);
-    console.log('Target group entity loaded successfully: ', targetGroupEntity.id * -1);
+    const targetGroupEntity = await client.getEntity(targetGroupName);
     targetGroupId = targetGroupEntity.id * -1;
+    console.log(`Target group (${targetGroupName}) entity loaded successfully.`);
   } catch (error) {
     console.error('Error loading target group entity:', error);
+    return;
+  }
+
+  try {
+    const veeAnalysisGroupEntity = await client.getEntity(veeAnalysisGroupName);
+    veeAnalysisGroupId = veeAnalysisGroupEntity.id * -1;
+    console.log(`Vee Analysis group (${veeAnalysisGroupName}) entity loaded successfully.`);
+  } catch (error) {
+    console.error('Error loading Vee Analysis group entity:', error);
     return;
   }
 
@@ -86,10 +95,10 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
     console.log(`Sending health check: ${healthMessage}`);
-    await sendTelegramMessage(healthMessage); // Await to handle async issues
+    await sendTelegramMessage(healthMessage);
   }
 
-  // Set an interval to send a health check every 30 seconds for testing
+  // Set an interval to send a health check every 30 seconds
   setInterval(sendHealthCheck, 30 * 1000);
 
   // Log messages to a file and send to Telegram
@@ -109,18 +118,19 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     sendTelegramMessage(message);
   }
 
+  // Listen for messages from both target groups
   client.addEventHandler(async (update) => {
     if (update && update.message && update.message.message) {
       const message = update.message.message;
       const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
 
-      if ([targetGroupId, log_output_group_username, test_bina_2_crypto_mock].includes(groupId * -1)) {
+      if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock].includes(groupId * -1)) {
         console.log('New message from group:', message);
 
-        // If the message is from targetGroupId or mock, process it as a signal
-        if ((groupId * -1) === targetGroupId || (groupId * -1) === test_bina_2_crypto_mock) {
-          const signalData = await parseSignalUsingChatGPT(message); // Parse using ChatGPT
-          logMessage("Parsed signal data: ", signalData);
+        // Process messages as a signal if from target groups
+        if ((groupId * -1) === targetGroupId || (groupId * -1) === veeAnalysisGroupId || (groupId * -1) === test_bina_2_crypto_mock) {
+          const signalData = await parseSignalUsingChatGPT(message);
+          logMessage("Parsed signal data: " + JSON.stringify(signalData));
 
           if (signalData && signalData.position) {
             console.log('Parsed Signal Data:', signalData);
