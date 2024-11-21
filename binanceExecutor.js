@@ -23,6 +23,7 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     // Get step size and minimum order size
     const lotSizeFilter = symbolInfo.filters.find((f) => f.filterType === 'LOT_SIZE');
     const stepSize = parseFloat(lotSizeFilter.stepSize);
+    logMessage(`step size: ${stepSize}`)
     const minQty = parseFloat(lotSizeFilter.minQty);
 
     // Log step size and min quantity
