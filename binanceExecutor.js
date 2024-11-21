@@ -28,6 +28,13 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     // Calculate raw quantity
     let quantity = investment / price;
 
+    // Log raw quantity
+    logMessage(
+      `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Price: ${price})`,
+      client,
+      logOutputGroupEntity
+    );
+
     // Adjust quantity to conform to step size
     quantity = Math.floor(quantity / stepSize) * stepSize; // Round down to the nearest step size
 
@@ -41,17 +48,17 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     quantity = parseFloat(quantity.toFixed(precision));
 
     logMessage(
-      `Calculated quantity for ${symbol}: ${quantity} (stepSize: ${stepSize}, minQty: ${minQty})`,
+      `Adjusted quantity for ${symbol}: ${quantity} (stepSize: ${stepSize}, minQty: ${minQty}, precision: ${precision})`,
       client,
       logOutputGroupEntity
     );
+
     return quantity;
   } catch (error) {
     logMessage(`Error calculating quantity for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
     throw error;
   }
 }
-
 
 // Function to get the current price of a symbol
 async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
