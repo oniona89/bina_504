@@ -208,13 +208,12 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
             logOutputGroupEntity
           );
 
-          // Reduce precision: round down to the nearest smaller step size
-          adjustedQuantity = Math.floor(adjustedQuantity * 10) / 10; // Reduce one decimal point
-
-          if (adjustedQuantity <= 0) {
-            throw new Error(
-              `Failed to adjust precision for ${symbol}. Quantity reduced to zero or less.`
-            );
+          // Reduce precision by removing one decimal place
+          const precision = Math.max(0, adjustedQuantity.toString().split('.')[1]?.length || 0);
+          if (precision > 0) {
+            adjustedQuantity = Math.floor(adjustedQuantity * Math.pow(10, precision - 1)) / Math.pow(10, precision - 1);
+          } else {
+            adjustedQuantity = Math.floor(adjustedQuantity); // Fall back to whole number
           }
 
           logMessage(
@@ -222,6 +221,13 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
             client,
             logOutputGroupEntity
           );
+
+          if (adjustedQuantity <= 0) {
+            throw new Error(
+              `Failed to adjust precision for ${symbol}. Quantity reduced to zero or less.`
+            );
+          }
+
           attempts += 1; // Increment retry count
         } else {
           // If the error is not related to precision, rethrow it
@@ -247,6 +253,7 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
     console.error(error);
   }
 }
+
 
 
 // Function to set Stop-Loss and Take-Profit
