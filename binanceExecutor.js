@@ -25,6 +25,13 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     const stepSize = parseFloat(lotSizeFilter.stepSize);
     const minQty = parseFloat(lotSizeFilter.minQty);
 
+    // Log step size and min quantity
+    logMessage(
+      `Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`,
+      client,
+      logOutputGroupEntity
+    );
+
     // Calculate raw quantity
     let quantity = investment / price;
     logMessage(
@@ -35,12 +42,20 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
 
     // Determine precision based on step size
     const precision = stepSize >= 1 ? 0 : Math.floor(Math.log10(1 / stepSize));
-    quantity = Math.floor(quantity / stepSize) * stepSize; // Adjust quantity to conform to step size
-    quantity = precision === 0 ? Math.floor(quantity) : parseFloat(quantity.toFixed(precision)); // Apply rounding
+
+    // Adjust quantity based on step size and precision
+    if (precision === 0) {
+      quantity = Math.floor(quantity); // No decimals allowed
+    } else {
+      quantity = Math.floor(quantity / stepSize) * stepSize; // Adjust to step size
+      quantity = parseFloat(quantity.toFixed(precision)); // Enforce precision
+    }
 
     // Ensure quantity meets the minimum order size
     if (quantity < minQty) {
-      throw new Error(`Quantity ${quantity} is below the minimum order size ${minQty}`);
+      throw new Error(
+        `Quantity ${quantity} is below the minimum order size ${minQty} for ${symbol}`
+      );
     }
 
     logMessage(
@@ -54,6 +69,7 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     throw error;
   }
 }
+
 
 // Function to get the current price of a symbol
 async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
