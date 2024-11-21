@@ -34,37 +34,26 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     );
 
     // Determine precision based on step size
-    let precision;
-    if (stepSize >= 1) {
-      precision = 0; // No decimal points if step size is 1 or greater
-    } else {
-      precision = Math.floor(Math.log10(1 / stepSize)); // Decimal points based on step size
-    }
+    const precision = stepSize >= 1 ? 0 : Math.floor(Math.log10(1 / stepSize));
+    quantity = Math.floor(quantity / stepSize) * stepSize; // Adjust quantity to conform to step size
+    quantity = precision === 0 ? Math.floor(quantity) : parseFloat(quantity.toFixed(precision)); // Apply rounding
 
-    // Adjust quantity to conform to step size and precision
-    quantity = Math.floor(quantity / stepSize) * stepSize; // Adjust to step size
-    quantity = parseFloat(quantity.toFixed(precision)); // Adjust to precision
-
-    // Ensure quantity meets the minimum requirement
+    // Ensure quantity meets the minimum order size
     if (quantity < minQty) {
       throw new Error(`Quantity ${quantity} is below the minimum order size ${minQty}`);
     }
 
-    // Log step size, precision, and adjusted quantity
     logMessage(
       `Adjusted quantity for ${symbol}: ${quantity} (Step size: ${stepSize}, Min quantity: ${minQty}, Precision: ${precision})`,
       client,
       logOutputGroupEntity
     );
-
     return quantity;
   } catch (error) {
     logMessage(`Error calculating quantity for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
     throw error;
   }
 }
-
-
 
 // Function to get the current price of a symbol
 async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
@@ -180,8 +169,7 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
       type: 'MARKET',
       quantity: quantity,
     });
-
-    logMessage(`Placed order successfully: ${JSON.stringify(order)}`, client, logOutputGroupEntity);
+    logMessage(`Placed order: ${JSON.stringify(order)}`, client, logOutputGroupEntity);
     return order;
   } catch (error) {
     logMessage(
@@ -190,10 +178,9 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
       logOutputGroupEntity
     );
     logMessage(`Debugging details: ${JSON.stringify({ symbol, side, quantity })}`, client, logOutputGroupEntity);
-    throw error;
+    console.error(error);
   }
 }
-
 
 // Function to set Stop-Loss and Take-Profit
 async function setStopLossAndTakeProfit(
