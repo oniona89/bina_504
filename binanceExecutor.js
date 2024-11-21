@@ -179,26 +179,75 @@ async function setLeverage(symbol, leverage, client, logOutputGroupEntity) {
 }
 
 // Function to place a futures market order
+// Function to place a futures market order with retry mechanism
 async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutputGroupEntity) {
   try {
-    const order = await binanceClient.futuresOrder({
-      symbol: symbol,
-      side: side,
-      type: 'MARKET',
-      quantity: quantity,
-    });
-    logMessage(`Placed order: ${JSON.stringify(order)}`, client, logOutputGroupEntity);
-    return order;
+    let adjustedQuantity = quantity; // Start with the calculated quantity
+    let attempts = 0;
+    const maxAttempts = 5; // Limit the number of retries to avoid infinite loops
+
+    while (attempts < maxAttempts) {
+      try {
+        const order = await binanceClient.futuresOrder({
+          symbol: symbol,
+          side: side,
+          type: 'MARKET',
+          quantity: adjustedQuantity,
+        });
+        logMessage(
+          `Placed order successfully: ${JSON.stringify(order)}`,
+          client,
+          logOutputGroupEntity
+        );
+        return order;
+      } catch (error) {
+        if (error.message.includes('Precision is over the maximum defined for this asset')) {
+          logMessage(
+            `Precision error for ${symbol}. Quantity: ${adjustedQuantity}. Retrying with reduced precision.`,
+            client,
+            logOutputGroupEntity
+          );
+
+          // Reduce precision: round down to the nearest smaller step size
+          adjustedQuantity = Math.floor(adjustedQuantity * 10) / 10; // Reduce one decimal point
+
+          if (adjustedQuantity <= 0) {
+            throw new Error(
+              `Failed to adjust precision for ${symbol}. Quantity reduced to zero or less.`
+            );
+          }
+
+          logMessage(
+            `Adjusted quantity for retry: ${adjustedQuantity}`,
+            client,
+            logOutputGroupEntity
+          );
+          attempts += 1; // Increment retry count
+        } else {
+          // If the error is not related to precision, rethrow it
+          throw error;
+        }
+      }
+    }
+
+    throw new Error(
+      `Failed to place order for ${symbol} after ${maxAttempts} attempts due to precision issues.`
+    );
   } catch (error) {
     logMessage(
-      `Error placing order for ${symbol}: ${error.message}. Quantity: ${quantity}`,
+      `Error placing order for ${symbol}: ${error.message}. Final quantity attempted: ${quantity}`,
       client,
       logOutputGroupEntity
     );
-    logMessage(`Debugging details: ${JSON.stringify({ symbol, side, quantity })}`, client, logOutputGroupEntity);
+    logMessage(
+      `Debugging details: ${JSON.stringify({ symbol, side, quantity })}`,
+      client,
+      logOutputGroupEntity
+    );
     console.error(error);
   }
 }
+
 
 // Function to set Stop-Loss and Take-Profit
 async function setStopLossAndTakeProfit(
