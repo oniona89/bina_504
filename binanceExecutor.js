@@ -65,6 +65,7 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
     const { position, symbol, entryPriceRange, leverage, targets, stopLoss } = signalData;
 
     const orderSide = position === 'LONG' ? 'BUY' : 'SELL';
+    const closeOrderSide = position === 'LONG' ? 'SELL' : 'BUY'; // Opposite of entry side
     const [minPrice, maxPrice] = entryPriceRange.split('-').map(Number);
     const firstTarget = targets[0];
     const stopLossPrice = stopLoss;
@@ -112,10 +113,11 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
               client,
               logOutputGroupEntity
             );
+
             // Set Stop-Loss and Take-Profit after the order is executed
             await setStopLossAndTakeProfit(
               tradingSymbol,
-              orderSide,
+              closeOrderSide,
               quantity,
               stopLossPrice,
               firstTarget,
@@ -181,20 +183,24 @@ async function setStopLossAndTakeProfit(
   logOutputGroupEntity
 ) {
   try {
+    // Place Stop-Loss Order
     const stopLossOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: side === 'BUY' ? 'SELL' : 'BUY',
+      side: side,
       type: 'STOP_MARKET',
       stopPrice: stopLossPrice,
       quantity: quantity,
+      reduceOnly: true, // Ensures it's linked to the position
     });
 
+    // Place Take-Profit Order
     const takeProfitOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: side === 'BUY' ? 'SELL' : 'BUY',
+      side: side,
       type: 'TAKE_PROFIT_MARKET',
       stopPrice: takeProfitPrice,
       quantity: quantity,
+      reduceOnly: true, // Ensures it's linked to the position
     });
 
     logMessage(
