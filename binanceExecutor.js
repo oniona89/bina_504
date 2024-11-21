@@ -59,7 +59,7 @@ async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
   }
 }
 
-// Function to execute the trade when the price is in the desired range
+// Function to execute a trade and set SL/TP
 async function executeTrade(signalData, client, logOutputGroupEntity) {
   try {
     const { position, symbol, entryPriceRange, leverage, targets, stopLoss } = signalData;
@@ -67,7 +67,7 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
     const orderSide = position === 'LONG' ? 'BUY' : 'SELL';
     const closeOrderSide = position === 'LONG' ? 'SELL' : 'BUY'; // Opposite of entry side
     const [minPrice, maxPrice] = entryPriceRange.split('-').map(Number);
-    const firstTarget = targets[0];
+    const firstTarget = targets[0]; // Take-Profit price
     const stopLossPrice = stopLoss;
 
     const tradingSymbol = symbol.replace('/', ''); // Strip the '/' for Binance pairs
@@ -77,64 +77,60 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
       logOutputGroupEntity
     );
 
-    // Create a mechanism to constantly check the price
-    const priceCheckInterval = 15000; // 15 seconds
-    let interval;
+    // Fetch the current price
+    const currentPrice = await getCurrentPrice(tradingSymbol, client, logOutputGroupEntity);
 
-    const checkPriceAndExecute = async () => {
-      const currentPrice = await getCurrentPrice(tradingSymbol, client, logOutputGroupEntity);
+    if (currentPrice !== null) {
+      logMessage(`Current price of ${tradingSymbol} is ${currentPrice}`, client, logOutputGroupEntity);
 
-      if (currentPrice !== null) {
-        logMessage(`Current price of ${tradingSymbol} is ${currentPrice}`, client, logOutputGroupEntity);
+      if (currentPrice >= minPrice && currentPrice <= maxPrice) {
+        logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`, client, logOutputGroupEntity);
 
-        if (currentPrice >= minPrice && currentPrice <= maxPrice) {
-          logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`, client, logOutputGroupEntity);
+        // Set leverage
+        await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity);
 
-          // Set leverage
-          await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity);
+        // Calculate quantity
+        const investment = 30;
+        const quantity = await calculateQuantity(
+          tradingSymbol,
+          investment,
+          currentPrice,
+          client,
+          logOutputGroupEntity
+        );
+        logMessage(`Investment: ${investment}`, client, logOutputGroupEntity);
+        logMessage(`Quantity: ${quantity}`, client, logOutputGroupEntity);
 
-          // Calculate quantity
-          const investment = 30;
-          const quantity = await calculateQuantity(
-            tradingSymbol,
-            investment,
-            currentPrice,
+        // Place the market order
+        const marketOrder = await placeFuturesMarketOrder(
+          tradingSymbol,
+          orderSide,
+          quantity,
+          client,
+          logOutputGroupEntity
+        );
+        if (marketOrder) {
+          logMessage(
+            `Market order executed successfully: ${JSON.stringify(marketOrder)}`,
             client,
             logOutputGroupEntity
           );
-          logMessage(`Investment: ${investment}`, client, logOutputGroupEntity);
-          logMessage(`Quantity: ${quantity}`, client, logOutputGroupEntity);
 
-          // Place the market order
-          const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity, client, logOutputGroupEntity);
-          if (order) {
-            logMessage(
-              `Market order executed successfully: ${JSON.stringify(order)}`,
-              client,
-              logOutputGroupEntity
-            );
-
-            // Set Stop-Loss and Take-Profit after the order is executed
-            await setStopLossAndTakeProfit(
-              tradingSymbol,
-              closeOrderSide,
-              quantity,
-              stopLossPrice,
-              firstTarget,
-              client,
-              logOutputGroupEntity
-            );
-
-            // Stop checking after executing the trade
-            clearInterval(interval);
-          }
-        } else {
-          logMessage(`Price of ${tradingSymbol} is ${currentPrice}, not in range.`, client, logOutputGroupEntity);
+          // Add Stop-Loss and Take-Profit orders
+          await setStopLossAndTakeProfit(
+            tradingSymbol,
+            closeOrderSide,
+            quantity,
+            stopLossPrice,
+            firstTarget,
+            client,
+            logOutputGroupEntity
+          );
         }
+      } else {
+        logMessage(`Price of ${tradingSymbol} is ${currentPrice}, not in range.`, client, logOutputGroupEntity);
       }
-    };
-
-    interval = setInterval(checkPriceAndExecute, priceCheckInterval);
+    }
   } catch (error) {
     logMessage(`Error executing trade for ${signalData.symbol}: ${error.message}`, client, logOutputGroupEntity);
   }
@@ -172,6 +168,7 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
   }
 }
 
+// Function to set Stop-Loss and Take-Profit
 async function setStopLossAndTakeProfit(
   symbol,
   side,
@@ -182,34 +179,10 @@ async function setStopLossAndTakeProfit(
   logOutputGroupEntity
 ) {
   try {
-    // Wait until the position exists
-    let positionFilled = false;
-    let position;
-
-    while (!positionFilled) {
-      const positionInfo = await binanceClient.futuresPositionRisk();
-      position = positionInfo.find((p) => p.symbol === symbol && parseFloat(p.positionAmt) !== 0);
-
-      if (position) {
-        positionFilled = true;
-        logMessage(
-          `Position detected for ${symbol}. PositionAmt: ${position.positionAmt}, EntryPrice: ${position.entryPrice}`,
-          client,
-          logOutputGroupEntity
-        );
-      } else {
-        logMessage(`Waiting for position to be filled for ${symbol}...`, client, logOutputGroupEntity);
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-      }
-    }
-
-    // Determine the correct reduce-only order side
-    const reduceSide = parseFloat(position.positionAmt) > 0 ? 'SELL' : 'BUY'; // Reduce LONG -> SELL, Reduce SHORT -> BUY
-
     // Place Stop-Loss Order
     const stopLossOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: reduceSide, // Opposite side of the position
+      side: side, // Opposite side of the position
       type: 'STOP_MARKET',
       stopPrice: stopLossPrice,
       quantity: quantity,
@@ -221,7 +194,7 @@ async function setStopLossAndTakeProfit(
     // Place Take-Profit Order
     const takeProfitOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: reduceSide, // Opposite side of the position
+      side: side, // Opposite side of the position
       type: 'TAKE_PROFIT_MARKET',
       stopPrice: takeProfitPrice,
       quantity: quantity,
@@ -231,7 +204,7 @@ async function setStopLossAndTakeProfit(
     logMessage(`Take-Profit order placed: ${JSON.stringify(takeProfitOrder)}`, client, logOutputGroupEntity);
 
     logMessage(
-      `Stop-Loss and Take-Profit orders set: StopLoss: ${stopLossPrice}, TakeProfit: ${takeProfitPrice}`,
+      `Stop-Loss and Take-Profit orders set: StopLoss=${stopLossPrice}, TakeProfit=${takeProfitPrice}`,
       client,
       logOutputGroupEntity
     );
@@ -244,8 +217,6 @@ async function setStopLossAndTakeProfit(
     console.error(error);
   }
 }
-
-
 
 module.exports = {
   executeTrade,
