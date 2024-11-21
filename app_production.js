@@ -6,7 +6,7 @@ const path = require('path');
 const { parseSignalUsingChatGPT } = require('./parseSignalGPT');
 const { saveSignalToFile } = require('./signalParser');
 const { executeTrade } = require('./binanceExecutor');
-const { sendTelegramMessage, logMessage } = require('./logger'); // Import sendTelegramMessage
+const { sendTelegramMessage, logMessage } = require('./logger'); // Import logMessage and sendTelegramMessage
 
 // Replace with your API ID and Hash from my.telegram.org
 const apiId = 18030888;
@@ -20,7 +20,7 @@ const sessionFilePath = path.join(__dirname, 'session.txt');
 let sessionString = '';
 if (fs.existsSync(sessionFilePath)) {
   sessionString = fs.readFileSync(sessionFilePath, 'utf-8');
-  logMessage('Session loaded from file.');
+  logMessage('Session loaded from file.', null, null);
 }
 
 const stringSession = new StringSession(sessionString);
@@ -37,11 +37,13 @@ const stringSession = new StringSession(sessionString);
     onError: (err) => console.log(err),
   });
 
+  logMessage('Connected to Telegram.', client, null);
 
   // Save the session to the file if it's not already saved
   const sessionData = client.session.save();
   if (!fs.existsSync(sessionFilePath) || sessionData !== sessionString) {
     fs.writeFileSync(sessionFilePath, sessionData);
+    logMessage('Session saved to file.', client, null);
   }
 
   // Group IDs
@@ -56,7 +58,7 @@ const stringSession = new StringSession(sessionString);
 
   try {
     logOutputGroupEntity = await client.getEntity(log_output_group_username);
-    logMessage('Log output group entity loaded successfully.');
+    logMessage('Log output group entity loaded successfully.', client, logOutputGroupEntity);
   } catch (error) {
     console.error('Error loading log output group entity:', error);
     return;
@@ -65,7 +67,7 @@ const stringSession = new StringSession(sessionString);
   try {
     const targetGroupEntity = await client.getEntity(targetGroupName);
     targetGroupId = targetGroupEntity.id * -1;
-    logMessage(`Target group (${targetGroupName}) entity loaded successfully.`);
+    logMessage(`Target group (${targetGroupName}) entity loaded successfully.`, client, logOutputGroupEntity);
   } catch (error) {
     console.error('Error loading target group entity:', error);
     return;
@@ -74,7 +76,7 @@ const stringSession = new StringSession(sessionString);
   try {
     const veeAnalysisGroupEntity = await client.getEntity(veeAnalysisGroupName);
     veeAnalysisGroupId = veeAnalysisGroupEntity.id * -1;
-    logMessage(`Vee Analysis group (${veeAnalysisGroupName}) entity loaded successfully.`);
+    logMessage(`Vee Analysis group (${veeAnalysisGroupName}) entity loaded successfully.`, client, logOutputGroupEntity);
   } catch (error) {
     console.error('Error loading Vee Analysis group entity:', error);
     return;
@@ -83,29 +85,12 @@ const stringSession = new StringSession(sessionString);
   // Health check function to be sent every 30 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
-    logMessage(`Sending health check: ${healthMessage}`);
-    await sendTelegramMessage(client, logOutputGroupEntity, healthMessage); // Call the function from logger.js
+    logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
+    await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
   }
 
   // Set an interval to send a health check every 30 seconds
   setInterval(sendHealthCheck, 30 * 1000);
-
-  // Log messages to a file and send to Telegram
-  function logMessage(message) {
-    const date = new Date();
-    const formattedDate = date.toISOString();
-    const logEntry = `${formattedDate} - ${message}\n\n`;
-
-    // Save the log to the file
-    fs.appendFile(logFilePath, logEntry, (err) => {
-      if (err) {
-        console.error('Error logging message:', err);
-      }
-    });
-
-    // Send the log to Telegram
-    sendTelegramMessage(client, logOutputGroupEntity, message); // Call the function from logger.js
-  }
 
   // Listen for messages from both target groups
   client.addEventHandler(async (update) => {
@@ -114,22 +99,23 @@ const stringSession = new StringSession(sessionString);
       const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
 
       if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock].includes(groupId * -1)) {
-        logMessage(`New message from group: ${message}`);
+        logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
 
         // Process messages as a signal if from target groups
-        if ((groupId * -1) === targetGroupId || (groupId * -1) === veeAnalysisGroupId || (groupId * -1) === test_bina_2_crypto_mock) {
+        if (
+          (groupId * -1) === targetGroupId ||
+          (groupId * -1) === veeAnalysisGroupId ||
+          (groupId * -1) === test_bina_2_crypto_mock
+        ) {
           const signalData = await parseSignalUsingChatGPT(message);
-          logMessage("Parsed signal data: " + JSON.stringify(signalData));
+          logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
 
           if (signalData && signalData.position) {
-            logMessage('Parsed Signal Data:', signalData);
-
-            // Log parsed signal data and save it
-            logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`);
+            logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
             saveSignalToFile(signalData);
 
             // Execute the trade using Binance API
-            executeTrade(signalData);
+            executeTrade(signalData, client, logOutputGroupEntity);
           }
         }
       }
