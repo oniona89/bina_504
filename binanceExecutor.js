@@ -28,7 +28,6 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     // Calculate raw quantity
     let quantity = investment / price;
 
-    // Log raw quantity
     logMessage(
       `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Price: ${price})`,
       client,
@@ -36,19 +35,16 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     );
 
     // Adjust quantity to conform to step size
-    quantity = Math.floor(quantity / stepSize) * stepSize; // Round down to the nearest step size
+    quantity = Math.floor(quantity / stepSize) * stepSize;
 
-    // Ensure quantity is at least the minimum
+    // Ensure quantity meets the minimum requirement
     if (quantity < minQty) {
       throw new Error(`Quantity ${quantity} is below the minimum order size ${minQty}`);
     }
 
-    // Ensure precision does not exceed step size precision
-    const precision = Math.floor(Math.log10(1 / stepSize));
-    quantity = parseFloat(quantity.toFixed(precision));
-
+    // Log step size and adjusted quantity
     logMessage(
-      `Adjusted quantity for ${symbol}: ${quantity} (stepSize: ${stepSize}, minQty: ${minQty}, precision: ${precision})`,
+      `Adjusted quantity for ${symbol}: ${quantity} (Step size: ${stepSize}, Min quantity: ${minQty})`,
       client,
       logOutputGroupEntity
     );
@@ -174,13 +170,20 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
       type: 'MARKET',
       quantity: quantity,
     });
-    logMessage(`Placed order: ${JSON.stringify(order)}`, client, logOutputGroupEntity);
+
+    logMessage(`Placed order successfully: ${JSON.stringify(order)}`, client, logOutputGroupEntity);
     return order;
   } catch (error) {
-    logMessage(`Error placing order for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
-    console.error(error);
+    logMessage(
+      `Error placing order for ${symbol}: ${error.message}. Quantity: ${quantity}`,
+      client,
+      logOutputGroupEntity
+    );
+    logMessage(`Debugging details: ${JSON.stringify({ symbol, side, quantity })}`, client, logOutputGroupEntity);
+    throw error;
   }
 }
+
 
 // Function to set Stop-Loss and Take-Profit
 async function setStopLossAndTakeProfit(
