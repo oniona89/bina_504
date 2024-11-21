@@ -90,7 +90,7 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
         await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity);
 
         // Calculate quantity
-        const investment = 30;
+        const investment = 200;
         const quantity = await calculateQuantity(
           tradingSymbol,
           investment,
