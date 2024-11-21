@@ -174,7 +174,7 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
 
 async function setStopLossAndTakeProfit(
   symbol,
-  positionSide,
+  side,
   quantity,
   stopLossPrice,
   takeProfitPrice,
@@ -182,29 +182,38 @@ async function setStopLossAndTakeProfit(
   logOutputGroupEntity
 ) {
   try {
-    // Check if the specified position exists
-    const positionInfo = await binanceClient.futuresPositionRisk();
-    const position = positionInfo.find((p) => p.symbol === symbol && p.positionSide === positionSide);
+    // Wait until the position exists
+    let positionFilled = false;
+    let position;
 
-    if (!position || parseFloat(position.positionAmt) === 0) {
-      throw new Error(`No ${positionSide} position found for ${symbol}`);
+    while (!positionFilled) {
+      const positionInfo = await binanceClient.futuresPositionRisk();
+      position = positionInfo.find((p) => p.symbol === symbol && parseFloat(p.positionAmt) !== 0);
+
+      if (position) {
+        positionFilled = true;
+        logMessage(
+          `Position detected for ${symbol}. PositionAmt: ${position.positionAmt}, EntryPrice: ${position.entryPrice}`,
+          client,
+          logOutputGroupEntity
+        );
+      } else {
+        logMessage(`Waiting for position to be filled for ${symbol}...`, client, logOutputGroupEntity);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+      }
     }
 
-    logMessage(
-      `Setting Stop-Loss and Take-Profit for ${positionSide} position on ${symbol}`,
-      client,
-      logOutputGroupEntity
-    );
+    // Determine the correct reduce-only order side
+    const reduceSide = parseFloat(position.positionAmt) > 0 ? 'SELL' : 'BUY'; // Reduce LONG -> SELL, Reduce SHORT -> BUY
 
     // Place Stop-Loss Order
     const stopLossOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: positionSide === 'LONG' ? 'SELL' : 'BUY', // Opposite of the position side
+      side: reduceSide, // Opposite side of the position
       type: 'STOP_MARKET',
       stopPrice: stopLossPrice,
       quantity: quantity,
-      reduceOnly: true,
-      positionSide: positionSide, // Ensure it applies to the correct position
+      reduceOnly: true, // Ensure it reduces the position
     });
 
     logMessage(`Stop-Loss order placed: ${JSON.stringify(stopLossOrder)}`, client, logOutputGroupEntity);
@@ -212,12 +221,11 @@ async function setStopLossAndTakeProfit(
     // Place Take-Profit Order
     const takeProfitOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: positionSide === 'LONG' ? 'SELL' : 'BUY', // Opposite of the position side
+      side: reduceSide, // Opposite side of the position
       type: 'TAKE_PROFIT_MARKET',
       stopPrice: takeProfitPrice,
       quantity: quantity,
-      reduceOnly: true,
-      positionSide: positionSide, // Ensure it applies to the correct position
+      reduceOnly: true, // Ensure it reduces the position
     });
 
     logMessage(`Take-Profit order placed: ${JSON.stringify(takeProfitOrder)}`, client, logOutputGroupEntity);
@@ -229,7 +237,7 @@ async function setStopLossAndTakeProfit(
     );
   } catch (error) {
     logMessage(
-      `Error setting Stop-Loss or Take-Profit for ${positionSide} position on ${symbol}: ${error.message}`,
+      `Error setting Stop-Loss or Take-Profit for ${side} position on ${symbol}: ${error.message}`,
       client,
       logOutputGroupEntity
     );
