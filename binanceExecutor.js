@@ -34,7 +34,12 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     );
 
     // Determine precision based on step size
-    const precision = Math.max(0, Math.floor(Math.log10(1 / stepSize)));
+    let precision;
+    if (stepSize >= 1) {
+      precision = 0; // No decimal points if step size is 1 or greater
+    } else {
+      precision = Math.floor(Math.log10(1 / stepSize)); // Decimal points based on step size
+    }
 
     // Adjust quantity to conform to step size and precision
     quantity = Math.floor(quantity / stepSize) * stepSize; // Adjust to step size
@@ -58,6 +63,7 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
     throw error;
   }
 }
+
 
 
 // Function to get the current price of a symbol
