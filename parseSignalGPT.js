@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { logMessage } = require('./logger');
 require('dotenv').config();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -40,7 +41,7 @@ async function parseSignalUsingChatGPT(message) {
       );
 
       // Log the full response to inspect
-      console.log("Full response from OpenAI API:", response.data);
+      logMessage(`Full response from OpenAI API: ${response.data}`);
 
       // Try parsing the response as JSON
       const completion = response.data.choices[0].message.content.trim();
@@ -48,20 +49,20 @@ async function parseSignalUsingChatGPT(message) {
       // Attempt to parse the response as valid JSON
       try {
         const signalData = JSON.parse(completion);
-        console.log("Parsed Signal Data from ChatGPT:", signalData);
+        logMessage(`Parsed Signal Data from ChatGPT: ${signalData}`);
         return signalData;
       } catch (jsonError) {
         console.error("Error parsing JSON from ChatGPT response:", jsonError);
-        console.log("Received non-JSON response:", completion);
+        logMessage(`Received non-JSON response: ${completion}`);
       }
 
       // If parsing failed, retry
       attempt++;
-      console.log(`Retry attempt ${attempt}...`);
+      logMessage(`Retry attempt ${attempt}...`);
     } catch (error) {
       console.error("Error fetching signal data from OpenAI API:", error.response ? error.response.data : error.message);
       attempt++;
-      console.log(`Retry attempt ${attempt}...`);
+      logMessage(`Retry attempt ${attempt}...`);
     }
   }
 
@@ -87,7 +88,7 @@ function extractSignalDataFromText(text) {
   if (leverageMatch) signalData.leverage = parseInt(leverageMatch[1], 10);
   if (stopLossMatch) signalData.stopLoss = parseFloat(stopLossMatch[1]);
 
-  console.log("Extracted Signal Data:", signalData);
+  logMessage(`Extracted Signal Data: ${signalData}`);
   return signalData;
 }
 

@@ -1,43 +1,25 @@
 require('dotenv').config(); // Load environment variables from .env
-const fs = require('fs');
-const path = require('path');
 const binance = require('binance-api-node');
+const { logMessage } = require('./logger'); // Import logMessage
+const { sendTelegramMessage } = require('./app_production.js'); // Import sendTelegramMessage
 
 // Initialize Binance API client using credentials from .env
 const binanceClient = binance.default({
   apiKey: process.env.BINANCE_API_KEY,
   apiSecret: process.env.BINANCE_API_SECRET,
   useServerTime: true,
-  futures: true
+  futures: true,
 });
-
-// Log file path
-const logFilePath = path.join(__dirname, 'binanceLog.txt');
-
-// Helper function to log messages to binanceLog.txt
-function logMessage(message) {
-  const date = new Date();
-  const formattedDate = date.toISOString();
-  const logEntry = `${formattedDate} - ${message}\n`;
-
-  fs.appendFile(logFilePath, logEntry, (err) => {
-    if (err) {
-      console.error('Error writing to log file:', err);
-    }
-  });
-
-  console.log(message); // Also print to the console for real-time feedback
-}
 
 // Function to poll the current price of a symbol
 async function getCurrentPrice(symbol) {
   try {
     const ticker = await binanceClient.futuresPrices(); // Use futuresPrices for Futures
     const currentPrice = parseFloat(ticker[symbol]).toFixed(2);
-    logMessage(`Fetched current price for ${symbol}: ${currentPrice}`);
+    logMessage(`Fetched current price for ${symbol}: ${currentPrice}`, sendTelegramMessage);
     return currentPrice;
   } catch (error) {
-    logMessage(`Error fetching current price for ${symbol}: ${error.message}`);
+    logMessage(`Error fetching current price for ${symbol}: ${error.message}`, sendTelegramMessage);
     return null;
   }
 }
@@ -53,7 +35,7 @@ async function executeTrade(signalData) {
     const stopLossPrice = stopLoss;
 
     const tradingSymbol = symbol.replace('/', ''); // Strip the '/' for Binance pairs
-    console.log(`Received trading signal for ${symbol}: ${position} with target range ${minPrice} - ${maxPrice}`);
+    logMessage(`Received trading signal for ${symbol}: ${position} with target range ${minPrice} - ${maxPrice}`, sendTelegramMessage);
 
     // Create a mechanism to constantly check the price
     const priceCheckInterval = 15000; // 5 seconds
@@ -64,10 +46,10 @@ async function executeTrade(signalData) {
       const currentPrice = await getCurrentPrice(tradingSymbol);
 
       if (currentPrice !== null) {
-        console.log(`Current price of ${tradingSymbol} is ${currentPrice}`);
+        logMessage(`Current price of ${tradingSymbol} is ${currentPrice}`, sendTelegramMessage);
 
         if (currentPrice >= minPrice && currentPrice <= maxPrice) {
-          console.log(`Price is in range: ${currentPrice}. Executing ${position} order.`);
+          logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`, sendTelegramMessage);
 
           // Set leverage
           await setLeverage(tradingSymbol, leverage || 1); // Default to 1 if leverage is undefined
@@ -75,13 +57,13 @@ async function executeTrade(signalData) {
           // Round investment to 2 decimal places for USDT pairs
           const investment = 30;
           const quantity = (investment / currentPrice).toFixed(1);
-          console.log(`Investment: ${investment}`);
-          console.log(`Quantity: ${quantity}`);
+          logMessage(`Investment: ${investment}`, sendTelegramMessage);
+          logMessage(`Quantity: ${quantity}`, sendTelegramMessage);
 
           // Place the market order
           const order = await placeFuturesMarketOrder(tradingSymbol, orderSide, quantity);
           if (order) {
-            console.log(`Market order executed successfully: ${JSON.stringify(order)}`);
+            logMessage(`Market order executed successfully: ${JSON.stringify(order)}`, sendTelegramMessage);
             // Set Stop-Loss and Take-Profit after the order is executed
             await setStopLossAndTakeProfit(tradingSymbol, orderSide, quantity, stopLossPrice, firstTarget);
 
@@ -89,7 +71,7 @@ async function executeTrade(signalData) {
             clearInterval(interval);
           }
         } else {
-          console.log(`Price of ${tradingSymbol} is ${currentPrice}, not in range.`);
+          logMessage(`Price of ${tradingSymbol} is ${currentPrice}, not in range.`, sendTelegramMessage);
         }
       }
     };
@@ -98,8 +80,7 @@ async function executeTrade(signalData) {
     interval = setInterval(checkPriceAndExecute, priceCheckInterval);
 
   } catch (error) {
-    console.error(`Error executing trade for ${signalData.symbol}: ${error.message}`);
-    logMessage(`Error executing trade for ${signalData.symbol}: ${error.message}`);
+    logMessage(`Error executing trade for ${signalData.symbol}: ${error.message}`, sendTelegramMessage);
   }
 }
 
@@ -110,10 +91,10 @@ async function setLeverage(symbol, leverage) {
       symbol: symbol,
       leverage: leverage
     });
-    logMessage(`Leverage set for ${symbol} to ${leverage}`);
+    logMessage(`Leverage set for ${symbol} to ${leverage}`, sendTelegramMessage);
     return response;
   } catch (error) {
-    logMessage(`Error setting leverage for ${symbol}: ${error.message}`);
+    logMessage(`Error setting leverage for ${symbol}: ${error.message}`, sendTelegramMessage);
     console.error(error);
   }
 }
@@ -127,10 +108,10 @@ async function placeFuturesMarketOrder(symbol, side, quantity) {
       type: 'MARKET',
       quantity: quantity,
     });
-    logMessage(`Placed order: ${JSON.stringify(order)}`);
+    logMessage(`Placed order: ${JSON.stringify(order)}`, sendTelegramMessage);
     return order;
   } catch (error) {
-    logMessage(`Error placing order for ${symbol}: ${error.message}`);
+    logMessage(`Error placing order for ${symbol}: ${error.message}`, sendTelegramMessage);
     console.error(error);
   }
 }
@@ -154,9 +135,9 @@ async function setStopLossAndTakeProfit(symbol, side, quantity, stopLossPrice, t
       quantity: quantity,
     });
 
-    logMessage(`Stop-Loss and Take-Profit orders set: StopLoss: ${stopLossPrice}, TakeProfit: ${takeProfitPrice}`);
+    logMessage(`Stop-Loss and Take-Profit orders set: StopLoss: ${stopLossPrice}, TakeProfit: ${takeProfitPrice}`, sendTelegramMessage);
   } catch (error) {
-    logMessage(`Error setting Stop-Loss or Take-Profit for ${symbol}: ${error.message}`);
+    logMessage(`Error setting Stop-Loss or Take-Profit for ${symbol}: ${error.message}`, sendTelegramMessage);
     console.error(error);
   }
 }
