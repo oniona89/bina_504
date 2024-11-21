@@ -172,10 +172,9 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
   }
 }
 
-// Function to set stop-loss and take-profit orders
 async function setStopLossAndTakeProfit(
   symbol,
-  side,
+  positionSide,
   quantity,
   stopLossPrice,
   takeProfitPrice,
@@ -183,25 +182,45 @@ async function setStopLossAndTakeProfit(
   logOutputGroupEntity
 ) {
   try {
+    // Check if the specified position exists
+    const positionInfo = await binanceClient.futuresPositionRisk();
+    const position = positionInfo.find((p) => p.symbol === symbol && p.positionSide === positionSide);
+
+    if (!position || parseFloat(position.positionAmt) === 0) {
+      throw new Error(`No ${positionSide} position found for ${symbol}`);
+    }
+
+    logMessage(
+      `Setting Stop-Loss and Take-Profit for ${positionSide} position on ${symbol}`,
+      client,
+      logOutputGroupEntity
+    );
+
     // Place Stop-Loss Order
     const stopLossOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: side,
+      side: positionSide === 'LONG' ? 'SELL' : 'BUY', // Opposite of the position side
       type: 'STOP_MARKET',
       stopPrice: stopLossPrice,
       quantity: quantity,
-      reduceOnly: true, // Ensures it's linked to the position
+      reduceOnly: true,
+      positionSide: positionSide, // Ensure it applies to the correct position
     });
+
+    logMessage(`Stop-Loss order placed: ${JSON.stringify(stopLossOrder)}`, client, logOutputGroupEntity);
 
     // Place Take-Profit Order
     const takeProfitOrder = await binanceClient.futuresOrder({
       symbol: symbol,
-      side: side,
+      side: positionSide === 'LONG' ? 'SELL' : 'BUY', // Opposite of the position side
       type: 'TAKE_PROFIT_MARKET',
       stopPrice: takeProfitPrice,
       quantity: quantity,
-      reduceOnly: true, // Ensures it's linked to the position
+      reduceOnly: true,
+      positionSide: positionSide, // Ensure it applies to the correct position
     });
+
+    logMessage(`Take-Profit order placed: ${JSON.stringify(takeProfitOrder)}`, client, logOutputGroupEntity);
 
     logMessage(
       `Stop-Loss and Take-Profit orders set: StopLoss: ${stopLossPrice}, TakeProfit: ${takeProfitPrice}`,
@@ -209,10 +228,16 @@ async function setStopLossAndTakeProfit(
       logOutputGroupEntity
     );
   } catch (error) {
-    logMessage(`Error setting Stop-Loss or Take-Profit for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
+    logMessage(
+      `Error setting Stop-Loss or Take-Profit for ${positionSide} position on ${symbol}: ${error.message}`,
+      client,
+      logOutputGroupEntity
+    );
     console.error(error);
   }
 }
+
+
 
 module.exports = {
   executeTrade,
