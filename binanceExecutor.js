@@ -22,6 +22,7 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
 
     // Get step size and minimum order size
     const lotSizeFilter = symbolInfo.filters.find((f) => f.filterType === 'LOT_SIZE');
+    logMessage(`lot size filter: ${lotSizeFilter}`)
     const stepSize = parseFloat(lotSizeFilter.stepSize);
     const minQty = parseFloat(lotSizeFilter.minQty);
 
@@ -53,6 +54,7 @@ async function calculateQuantity(symbol, investment, price, client, logOutputGro
 
     // Ensure quantity meets the minimum order size
     if (quantity < minQty) {
+      logMessage('The quantity is less than minimum')
       throw new Error(
         `Quantity ${quantity} is below the minimum order size ${minQty} for ${symbol}`
       );
