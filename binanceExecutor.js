@@ -10,7 +10,43 @@ const binanceClient = binance.default({
   futures: true,
 });
 
-// Function to poll the current price of a symbol
+// Function to fetch quantity precision for a symbol
+async function calculateQuantity(symbol, investment, price, client, logOutputGroupEntity) {
+  try {
+    const exchangeInfo = await binanceClient.exchangeInfo();
+    const symbolInfo = exchangeInfo.symbols.find((s) => s.symbol === symbol);
+
+    if (!symbolInfo) {
+      throw new Error(`Symbol ${symbol} not found.`);
+    }
+
+    // Get step size and minimum order size
+    const lotSizeFilter = symbolInfo.filters.find((f) => f.filterType === 'LOT_SIZE');
+    const stepSize = parseFloat(lotSizeFilter.stepSize);
+    const minQty = parseFloat(lotSizeFilter.minQty);
+
+    // Calculate raw quantity
+    let quantity = investment / price;
+
+    // Adjust quantity to conform to step size and minimum order size
+    quantity = Math.floor(quantity / stepSize) * stepSize; // Round down to the nearest step size
+    if (quantity < minQty) {
+      throw new Error(`Quantity ${quantity} is below the minimum order size ${minQty}`);
+    }
+
+    logMessage(
+      `Calculated quantity for ${symbol}: ${quantity} (stepSize: ${stepSize}, minQty: ${minQty})`,
+      client,
+      logOutputGroupEntity
+    );
+    return quantity;
+  } catch (error) {
+    logMessage(`Error calculating quantity for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
+    throw error;
+  }
+}
+
+// Function to get the current price of a symbol
 async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
   try {
     const ticker = await binanceClient.futuresPrices(); // Use futuresPrices for Futures
@@ -44,7 +80,6 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
     const priceCheckInterval = 15000; // 15 seconds
     let interval;
 
-    // This function will be called repeatedly to check the price
     const checkPriceAndExecute = async () => {
       const currentPrice = await getCurrentPrice(tradingSymbol, client, logOutputGroupEntity);
 
@@ -55,11 +90,17 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
           logMessage(`Price is in range: ${currentPrice}. Executing ${position} order.`, client, logOutputGroupEntity);
 
           // Set leverage
-          await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity); // Default to 1 if leverage is undefined
+          await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity);
 
-          // Calculate quantity based on investment
+          // Calculate quantity
           const investment = 30;
-          const quantity = (investment / currentPrice).toFixed(1);
+          const quantity = await calculateQuantity(
+            tradingSymbol,
+            investment,
+            currentPrice,
+            client,
+            logOutputGroupEntity
+          );
           logMessage(`Investment: ${investment}`, client, logOutputGroupEntity);
           logMessage(`Quantity: ${quantity}`, client, logOutputGroupEntity);
 
@@ -91,9 +132,7 @@ async function executeTrade(signalData, client, logOutputGroupEntity) {
       }
     };
 
-    // Start the interval to check the price every 15 seconds
     interval = setInterval(checkPriceAndExecute, priceCheckInterval);
-
   } catch (error) {
     logMessage(`Error executing trade for ${signalData.symbol}: ${error.message}`, client, logOutputGroupEntity);
   }
