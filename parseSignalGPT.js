@@ -11,7 +11,7 @@ async function parseSignalUsingChatGPT(message) {
     "symbol": "symbol/USDT", // The trading pair, e.g. "BTC/USDT"
     "entryPriceRange": "minPrice-maxPrice", // The acceptable price range for entry, e.g. "30000-30500"
     "targets": [target1, target2, ...], // Array of target prices to reach for take-profit
-    "leverage": leverage, // Leverage for the trade, an integer (if a range, return the average leverage)
+    "leverage": leverage, // Leverage for the trade, an integer (if a range, return the average leverage and math floor it to an integer )
     "stopLoss": stopLoss // The stop-loss price for the trade
   }
   
