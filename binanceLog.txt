@@ -56,3 +56,269 @@
 2024-11-10T16:06:56.241Z - Fetched current price for ZECUSDT: 46.91
 2024-11-10T16:06:59.783Z - Fetched current price for ARBUSDT: 0.64
 2024-11-10T16:07:03.081Z - Fetched current price for MANAUSDT: 0.35
+2024-11-26T11:08:53.668Z - Session loaded from file.
+2024-11-26T11:08:54.119Z - Connected to Telegram.
+2024-11-26T11:08:54.220Z - Log output group entity loaded successfully.
+2024-11-26T11:08:54.314Z - Target group (@Cryptosignals_Real1) entity loaded successfully.
+2024-11-26T11:08:54.489Z - Vee Analysis group (-1001754775046) entity loaded successfully.
+2024-11-26T11:09:13.719Z - New message from group: Trade: #ARB/USDT 
+
+🟢 LONG ZONE: 1.2 - 1.4
+
+🀄️ LEVERAGE: 20x
+
+1.🎯 0.879
+2.🎯 0.887
+3.🎯 0.896
+4.🎯 0.905
+5.🎯 0.913
+6.🎯 0.922
+
+⛔️ STOP-LOSS: 0.844
+2024-11-26T11:09:21.446Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:09:21.447Z - Parsed signal data: {"position":"LONG","symbol":"ARB/USDT","entryPriceRange":"1.2-1.4","targets":[0.879,0.887,0.896,0.905,0.913,0.922],"leverage":20,"stopLoss":0.844}
+2024-11-26T11:09:21.447Z - Parsed Signal Data from ChatGPT: [object Object]
+2024-11-26T11:09:21.447Z - Parsed Signal Data: {"position":"LONG","symbol":"ARB/USDT","entryPriceRange":"1.2-1.4","targets":[0.879,0.887,0.896,0.905,0.913,0.922],"leverage":20,"stopLoss":0.844}
+2024-11-26T11:09:21.448Z - Received trading signal for ARB/USDT: LONG with target range 1.2 - 1.4
+2024-11-26T11:09:21.837Z - Current price of ARBUSDT is 0.87
+2024-11-26T11:09:21.836Z - Fetched current price for ARBUSDT: 0.87
+2024-11-26T11:09:21.837Z - Price of ARBUSDT is 0.87, not in range.
+2024-11-26T11:10:54.491Z - Sending health check: ✅ App is running: 2024-11-26T11:10:54.491Z
+2024-11-26T11:12:54.493Z - Sending health check: ✅ App is running: 2024-11-26T11:12:54.493Z
+2024-11-26T11:14:54.498Z - Sending health check: ✅ App is running: 2024-11-26T11:14:54.498Z
+2024-11-26T11:16:54.500Z - Sending health check: ✅ App is running: 2024-11-26T11:16:54.500Z
+2024-11-26T11:18:54.508Z - Sending health check: ✅ App is running: 2024-11-26T11:18:54.508Z
+2024-11-26T11:20:54.518Z - Sending health check: ✅ App is running: 2024-11-26T11:20:54.518Z
+2024-11-26T11:22:54.523Z - Sending health check: ✅ App is running: 2024-11-26T11:22:54.523Z
+2024-11-26T11:24:54.528Z - Sending health check: ✅ App is running: 2024-11-26T11:24:54.528Z
+2024-11-26T11:24:54.609Z - New message from group: Binance Futures, Bitget Futures, ByBit USDT, KuCoin Futures, OKX Futures
+#BCH/USDT Take-Profit target 2 ✅
+Profit: 48.7262% 📈
+Period: 1 Days 18 Hours 8 Minutes ⏰
+2024-11-26T11:24:58.211Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:24:58.215Z - Received non-JSON response: The provided message is incomplete for a full trade signal. No data is available for position, entry price range, leverage, and stop-loss. However, below is the information that can be extracted in the desired JSON format:
+
+```json
+{
+  "symbol": "BCH/USDT",
+  "targets": [null, 2]
+}
+```
+2024-11-26T11:24:58.216Z - Retry attempt 1...
+2024-11-26T11:25:07.973Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:25:07.975Z - Retry attempt 2...
+2024-11-26T11:25:07.975Z - Received non-JSON response: The provided message appears to be incomplete and does not provide all the necessary information to fill out the requested JSON format. Based on the provided information, a possible approach for JSON data could be made as 
+
+``
+{
+    "symbol": "BCH/USDT",
+    "targets": ["unknown"]
+}
+``
+
+However, returning such JSON data would imply imprecision as several fields such as "position", "entryPriceRange", "leverage" and "stopLoss" are not provided nor are they clear from context in the given message.
+2024-11-26T11:25:15.885Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:25:15.887Z - Received non-JSON response: The provided signal message is incomplete and does not provide all the required data, hence the extraction could lead to incomplete JSON data. Here's the best possible extraction based on the given information:
+
+```json
+{
+    "symbol": "BCH/USDT",
+    "targets": ["target 2"],
+    "profit": "48.7262%"
+}
+```
+
+Note that values for "position", "entryPriceRange", "leverage", and "stopLoss" fields are not provided in the message, hence they are not included in the JSON data.
+2024-11-26T11:25:15.888Z - Retry attempt 3...
+2024-11-26T11:25:15.897Z - Parsed signal data: null
+2024-11-26T11:26:54.534Z - Sending health check: ✅ App is running: 2024-11-26T11:26:54.534Z
+2024-11-26T11:28:54.542Z - Sending health check: ✅ App is running: 2024-11-26T11:28:54.542Z
+2024-11-26T11:29:53.803Z - New message from group: OKX Futures
+#BCH/USDT Take-Profit target 3 ✅
+Profit: 58.0941% 📈
+Period: 1 Days 18 Hours 13 Minutes ⏰
+2024-11-26T11:29:56.926Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:29:56.927Z - Parsed Signal Data from ChatGPT: [object Object]
+2024-11-26T11:29:56.927Z - Parsed signal data: {"position":"LONG","symbol":"BCH/USDT","entryPriceRange":"Unknown","targets":[3],"leverage":"Unknown","stopLoss":"Unknown"}
+2024-11-26T11:29:56.927Z - Parsed Signal Data: {"position":"LONG","symbol":"BCH/USDT","entryPriceRange":"Unknown","targets":[3],"leverage":"Unknown","stopLoss":"Unknown"}
+2024-11-26T11:29:56.928Z - Received trading signal for BCH/USDT: LONG with target range NaN - undefined
+2024-11-26T11:29:57.240Z - Current price of BCHUSDT is 475.68
+2024-11-26T11:29:57.240Z - Price of BCHUSDT is 475.68, not in range.
+2024-11-26T11:29:57.239Z - Fetched current price for BCHUSDT: 475.68
+2024-11-26T11:30:08.885Z - New message from group: Binance Futures, Bitget Futures, ByBit USDT, KuCoin Futures, OKX Futures
+#BCH/USDT Take-Profit target 3 ✅
+Profit: 58.0941% 📈
+Period: 1 Days 18 Hours 13 Minutes ⏰
+2024-11-26T11:30:13.423Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:30:13.424Z - Parsed signal data: {"position":"UNKNOWN","symbol":"BCH/USDT","entryPriceRange":"UNKNOWN","targets":["UNKNOWN"],"leverage":"UNKNOWN","stopLoss":"UNKNOWN"}
+2024-11-26T11:30:13.424Z - Parsed Signal Data from ChatGPT: [object Object]
+2024-11-26T11:30:13.424Z - Parsed Signal Data: {"position":"UNKNOWN","symbol":"BCH/USDT","entryPriceRange":"UNKNOWN","targets":["UNKNOWN"],"leverage":"UNKNOWN","stopLoss":"UNKNOWN"}
+2024-11-26T11:30:13.425Z - Received trading signal for BCH/USDT: UNKNOWN with target range NaN - undefined
+2024-11-26T11:30:13.742Z - Current price of BCHUSDT is 475.65
+2024-11-26T11:30:13.742Z - Price of BCHUSDT is 475.65, not in range.
+2024-11-26T11:30:13.741Z - Fetched current price for BCHUSDT: 475.65
+2024-11-26T11:30:26.584Z - New message from group: Binance Futures, Bitget Futures, ByBit USDT, KuCoin Futures, OKX Futures
+#BCH/USDT Take-Profit target 3 ✅
+Profit: 58.0941% 📈
+Period: 1 Days 18 Hours 14 Minutes ⏰
+2024-11-26T11:30:30.244Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:30:30.245Z - Received non-JSON response: Based the received message, there are many essential details missing for the signal data. Therefore, it's impossible to provide a complete JSON data. However, we can only mention the available information which is the symbol and profit only. Here it is,
+
+{
+  "symbol": "BCH/USDT",
+  "profit": "58.0941%"
+}
+2024-11-26T11:30:30.246Z - Retry attempt 1...
+2024-11-26T11:30:36.823Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:30:36.825Z - Retry attempt 2...
+2024-11-26T11:30:36.825Z - Received non-JSON response: The provided signal message is missing significant amount of required data to be parsed into JSON format as per your requirements. It only provides us with a trading pair symbol and some profit information, but there is no specific information about the position, the entry price range, the targets, the leverage and the stop-loss. Therefore, I cannot parse this into the desired JSON format.
+2024-11-26T11:30:39.491Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:30:39.494Z - Parsed signal data: null
+2024-11-26T11:30:39.494Z - Retry attempt 3...
+2024-11-26T11:30:39.493Z - Received non-JSON response: The message provided doesn't contain enough information to extract all the required fields. Here is the JSON data for the provided information.
+
+{
+  "symbol": "BCH/USDT",
+  "targets": [3]
+}
+2024-11-26T11:30:54.551Z - Sending health check: ✅ App is running: 2024-11-26T11:30:54.550Z
+2024-11-26T11:32:52.292Z - New message from group: Binance Futures, ByBit USDT
+#OM/USDT Take-Profit target 3 ✅
+Profit: 64.7515% 📈
+Period: 6 Hours 17 Minutes ⏰
+2024-11-26T11:32:54.561Z - Sending health check: ✅ App is running: 2024-11-26T11:32:54.560Z
+2024-11-26T11:33:00.851Z - Retry attempt 1...
+2024-11-26T11:33:00.848Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:00.850Z - Received non-JSON response: The provided signal message is missing a lot of required information such as the position (LONG/SHORT), entry price range, targets, leverage, and stop-loss. Therefore, an accurate json cannot be provided based on provided incomplete data. However, a rough assumption based on the provided message can be:
+
+```json
+{
+    "symbol": "OM/USDT",
+    "targets": ["unknown"],
+    "profit": "64.7515%"
+}
+```
+To generate an accurate json signal, more information is needed.
+2024-11-26T11:33:06.440Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:06.442Z - Received non-JSON response: The provided signal message is incomplete as it's missing data for position, entry price range, leverage and stop loss. Without these details, it's impossible to create a complete JSON object as requested. However, the available details can be inputted into a JSON object as shown below:
+
+```json
+{ 
+"symbol": "OM/USDT",
+"targets": [3]
+}
+````
+2024-11-26T11:33:06.443Z - Retry attempt 2...
+2024-11-26T11:33:16.053Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:16.055Z - Parsed signal data: null
+2024-11-26T11:33:16.055Z - Retry attempt 3...
+2024-11-26T11:33:16.054Z - Received non-JSON response: Given the provided information, it isn't possible to fully complete the JSON structure due to missing information (position, entryPriceRange, leverage, stopLoss). Here is the best attempt given the available data:
+
+{
+  "symbol": "OM/USDT",
+  "targets": [3]
+}
+2024-11-26T11:33:16.130Z - New message from group: Binance Futures, Bitget Futures, ByBit USDT
+#OM/USDT Take-Profit target 3 ✅
+Profit: 64.7515% 📈
+Period: 6 Hours 17 Minutes ⏰
+2024-11-26T11:33:34.450Z - Received non-JSON response: The signal message does not provide all the information needed to fill every field in the required JSON format. The information about position, entry price range, leverage, and stop-loss is missing. We do have a trading pair and a profit target.
+
+One reasonable assumption we can make is that the position was "LONG", since a profit was made (most traders make profit from long positions, especially in bullish conditions). But we need to note that this is an assumption, the real position could have been "SHORT" as well. 
+
+For the other missing elements, without further information, we cannot make accurate guesses. Therefore, the resulted JSON will contain null values for such elements. 
+
+Additionally, we cannot accurately determine the "targets" value from the message, because it states "Take-Profit target 3" but doesn't give an actual value. We are to take the assumption that the profit of 64.7515% could be the third take-profit target but this could be inaccurate, it should have been explicitly mentioned in the signal message.
+
+Here's the resultant JSON:
+
+{
+  "position": "LONG", 
+  "symbol": "OM/USDT", 
+  "entryPriceRange": null, 
+  "targets": [64.7515], 
+  "leverage": null, 
+  "stopLoss": null 
+}
+2024-11-26T11:33:34.448Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:34.452Z - Retry attempt 1...
+2024-11-26T11:33:37.671Z - New message from group: OKX Futures
+#BCH/USDT Take-Profit target 4 ✅
+Profit: 67.3271% 📈
+Period: 1 Days 18 Hours 17 Minutes ⏰
+2024-11-26T11:33:37.674Z - New message from group: Binance Futures, Bitget Futures, ByBit USDT, KuCoin Futures, OKX Futures
+#OM/USDT Take-Profit target 3 ✅
+Profit: 64.7515% 📈
+Period: 6 Hours 18 Minutes ⏰
+2024-11-26T11:33:38.012Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:38.013Z - Received non-JSON response: The message provided doesn't contain all the necessary data to fill out the JSON format. Based on the information given, I can only fill the "symbol" field. Also, it's unclear if the profit percentage is related to the target met in the symbol's trade or a future prediction.
+
+Here's the parsed data in JSON format given the existing information:
+
+{
+  "symbol": "OM/USDT"
+}
+2024-11-26T11:33:38.014Z - Retry attempt 2...
+2024-11-26T11:33:42.547Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:42.549Z - Retry attempt 1...
+2024-11-26T11:33:42.548Z - Received non-JSON response: The given message does not provide enough information to completely fill out the required fields in the JSON data structure. Here's the best I could do with the provided information:
+
+```json
+{
+  "symbol": "BCH/USDT",
+  "targets": ["target 4"]
+}
+```
+2024-11-26T11:33:42.823Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:42.826Z - Parsed signal data: null
+2024-11-26T11:33:42.826Z - Retry attempt 3...
+2024-11-26T11:33:42.825Z - Received non-JSON response: The message is too incomplete for creating a full JSON format with given fields. However, a partial JSON format can be created like this:
+
+```json
+{
+  "symbol": "OM/USDT",
+  "targets": [3],
+  "profit": 64.7515
+}
+```
+2024-11-26T11:33:44.093Z - Received non-JSON response: The given message is not providing enough information to fill all the fields in the requested JSON format. The only data I can extract from the message is the symbol, and it's also mentioned about the profit but it didn't specify if it was a short or long position. Based on the given signal message, here is the resulted JSON:
+
+{
+  "symbol": "OM/USDT"
+}
+2024-11-26T11:33:44.093Z - Retry attempt 1...
+2024-11-26T11:33:44.091Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:45.591Z - Received non-JSON response: The signal data in the message is incomplete but I could extract:
+```json
+{
+   "symbol": "BCH/USDT"
+}
+```
+2024-11-26T11:33:45.592Z - Retry attempt 2...
+2024-11-26T11:33:45.589Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:46.953Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:46.954Z - Parsed signal data: {"position":"LONG","symbol":"OM/USDT","targets":["3"],"leverage":null,"stopLoss":null}
+2024-11-26T11:33:46.954Z - Parsed Signal Data from ChatGPT: [object Object]
+2024-11-26T11:33:46.954Z - Parsed Signal Data: {"position":"LONG","symbol":"OM/USDT","targets":["3"],"leverage":null,"stopLoss":null}
+2024-11-26T11:33:46.955Z - Error executing trade for OM/USDT: Cannot read properties of undefined (reading 'split')
+2024-11-26T11:33:49.326Z - Full response from OpenAI API: [object Object]
+2024-11-26T11:33:49.327Z - Parsed signal data: {"position":"LONG","symbol":"BCH/USDT","entryPriceRange":"Unknown","targets":["Unknown"],"leverage":"Unknown","stopLoss":"Unknown"}
+2024-11-26T11:33:49.327Z - Parsed Signal Data from ChatGPT: [object Object]
+2024-11-26T11:33:49.327Z - Parsed Signal Data: {"position":"LONG","symbol":"BCH/USDT","entryPriceRange":"Unknown","targets":["Unknown"],"leverage":"Unknown","stopLoss":"Unknown"}
+2024-11-26T11:33:49.328Z - Received trading signal for BCH/USDT: LONG with target range NaN - undefined
+2024-11-26T11:33:51.360Z - Fetched current price for BCHUSDT: 474.25
+2024-11-26T11:33:51.361Z - Price of BCHUSDT is 474.25, not in range.
+2024-11-26T11:33:51.360Z - Current price of BCHUSDT is 474.25
+2024-11-26T11:34:04.465Z - New message from group: Binance Futures, OKX Futures
+#BCH/USDT Take-Profit target 4 ✅
+Profit: 67.3271% 📈
+Period: 1 Days 18 Hours 17 Minutes ⏰
+2024-11-26T11:34:11.485Z - Retry attempt 1...
+2024-11-26T11:34:11.489Z - Retry attempt 2...
+2024-11-26T11:34:11.492Z - Parsed signal data: null
+2024-11-26T11:34:11.491Z - Retry attempt 3...
+2024-11-26T11:34:54.573Z - Sending health check: ✅ App is running: 2024-11-26T11:34:54.573Z
+2024-11-26T11:36:54.581Z - Sending health check: ✅ App is running: 2024-11-26T11:36:54.581Z
+2024-11-26T11:38:54.581Z - Sending health check: ✅ App is running: 2024-11-26T11:38:54.581Z
+2024-11-26T11:40:54.586Z - Sending health check: ✅ App is running: 2024-11-26T11:40:54.586Z
+2024-11-26T11:42:54.587Z - Sending health check: ✅ App is running: 2024-11-26T11:42:54.587Z

@@ -22,3 +22,43 @@ Targets: 37.85835, 38.0467, 38.4234, 38.8001, 39.1768, 39.5535, 39.9302, 40.3069
 Leverage: x20
 Stop Loss: 34.6564
 
+2024-11-26T11:09:21.448Z - Signal:
+Position: LONG
+Symbol: ARB/USDT
+Entry Price Range: 1.2-1.4
+Targets: 0.879, 0.887, 0.896, 0.905, 0.913, 0.922
+Leverage: x20
+Stop Loss: 0.844
+
+2024-11-26T11:29:56.928Z - Signal:
+Position: LONG
+Symbol: BCH/USDT
+Entry Price Range: Unknown
+Targets: 3
+Leverage: xUnknown
+Stop Loss: Unknown
+
+2024-11-26T11:30:13.425Z - Signal:
+Position: UNKNOWN
+Symbol: BCH/USDT
+Entry Price Range: UNKNOWN
+Targets: UNKNOWN
+Leverage: xUNKNOWN
+Stop Loss: UNKNOWN
+
+2024-11-26T11:33:46.955Z - Signal:
+Position: LONG
+Symbol: OM/USDT
+Entry Price Range: undefined
+Targets: 3
+Leverage: xnull
+Stop Loss: null
+
+2024-11-26T11:33:49.328Z - Signal:
+Position: LONG
+Symbol: BCH/USDT
+Entry Price Range: Unknown
+Targets: Unknown
+Leverage: xUnknown
+Stop Loss: Unknown
+

@@ -1,7 +1,7 @@
 require('dotenv').config(); // Load environment variables from .env
 const binance = require('binance-api-node');
 const { logMessage } = require('./logger'); // Import logMessage
-const { placeFuturesMarketOrder, getCurrentPrice, setLeverage, calculateQuantity } = require('./binanceHelpers'); // Import helpers
+const { placeFuturesMarketOrder, getCurrentPrice, setLeverage, calculateQuantity, setStopLossAndTakeProfit } = require('./binanceHelpers'); // Import helpers
 
 // Initialize Binance API client using credentials from .env
 const binanceClient = binance.default({
