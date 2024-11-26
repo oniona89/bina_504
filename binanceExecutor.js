@@ -298,7 +298,7 @@ async function setStopLossAndTakeProfit(
     );
   } catch (error) {
     logMessage(
-      `Error setting Stop-Loss or Take-Profit for ${side} position on ${symbol}: ${error.message}`,
+      `Error setting Stop-Loss for price: ${stopLossPrice} or Take-Profit for price: ${takeProfitPrice} for ${side} position on ${symbol}: ${error.message}`,
       client,
       logOutputGroupEntity
     );
