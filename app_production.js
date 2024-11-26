@@ -90,7 +90,7 @@ const stringSession = new StringSession(sessionString);
   }
 
   // Set an interval to send a health check every 30 seconds
-  setInterval(sendHealthCheck, 30 * 1000);
+  setInterval(sendHealthCheck, 120 * 1000);
 
   // Listen for messages from both target groups
   client.addEventHandler(async (update) => {
