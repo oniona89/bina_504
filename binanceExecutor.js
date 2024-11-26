@@ -288,7 +288,19 @@ async function setStopLossAndTakeProfit(
       quantity: quantity,
       reduceOnly: true, // Ensure it reduces the position
     });
-
+    // Log all variables in the takeProfitOrder for debugging
+    logMessage(
+      `Take-Profit Order Details:
+      Symbol: ${symbol},
+      Side: ${side},
+      Type: TAKE_PROFIT_MARKET,
+      Stop Price: ${takeProfitPrice},
+      Quantity: ${quantity},
+      Reduce Only: true,
+      Response: ${JSON.stringify(takeProfitOrder)}`,
+      client,
+      logOutputGroupEntity
+    );
     logMessage(`Take-Profit order placed: ${JSON.stringify(takeProfitOrder)}`, client, logOutputGroupEntity);
 
     logMessage(
