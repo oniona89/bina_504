@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { parseSignalUsingChatGPT } = require('./parseSignalGPT');
 const { saveSignalToFile } = require('./signalParser');
-const { executeTrades } = require('./binanceExecutor');
+const { executeTrades, addSignal } = require('./binanceExecutor');
 const { sendTelegramMessage, logMessage } = require('./logger'); // Import logMessage and sendTelegramMessage
 
 // Replace with your API ID and Hash from my.telegram.org
@@ -82,17 +82,20 @@ const stringSession = new StringSession(sessionString);
     return;
   }
 
-  // Health check function to be sent every 30 seconds
+  // Health check function to be sent every 120 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
     logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
     await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
   }
 
-  // Set an interval to send a health check every 30 seconds
+  // Start processing Binance trades
+  executeTrades(client, logOutputGroupEntity);
+
+  // Set an interval to send a health check every 120 seconds
   setInterval(sendHealthCheck, 120 * 1000);
 
-  // Listen for messages from both target groups
+  // Listen for messages from the target groups
   client.addEventHandler(async (update) => {
     if (update && update.message && update.message.message) {
       const message = update.message.message;
@@ -101,21 +104,25 @@ const stringSession = new StringSession(sessionString);
       if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock].includes(groupId * -1)) {
         logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
 
-        // Process messages as a signal if from target groups
+        // Process messages as signals if from target groups
         if (
           (groupId * -1) === targetGroupId ||
           (groupId * -1) === veeAnalysisGroupId ||
           (groupId * -1) === test_bina_2_crypto_mock
         ) {
-          const signalData = await parseSignalUsingChatGPT(message);
-          logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
+          try {
+            const signalData = await parseSignalUsingChatGPT(message);
+            logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
 
-          if (signalData && signalData.position) {
-            logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
-            saveSignalToFile(signalData);
+            if (signalData && signalData.position) {
+              logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
+              saveSignalToFile(signalData);
 
-            // Execute the trade using Binance API
-            executeTrades(signalData, client, logOutputGroupEntity);
+              // Add the signal to the Binance executor's queue
+              addSignal(signalData);
+            }
+          } catch (error) {
+            logMessage(`Error parsing signal: ${error.message}`, client, logOutputGroupEntity);
           }
         }
       }

@@ -1,5 +1,6 @@
 const binance = require('binance-api-node');
 const { logMessage } = require('./logger'); // Import logMessage
+const WebSocket = require('ws');
 
 // Initialize Binance API client using credentials from .env
 const binanceClient = binance.default({
@@ -166,10 +167,51 @@ async function setStopLossAndTakeProfit(
   }
 }
 
+// Live price cache for WebSocket updates
+let priceCache = {};
+
+// Function to initialize WebSocket for live price updates
+function initializeWebSocket() {
+    const ws = new WebSocket('wss://fstream.binance.com/ws/!ticker@arr');
+  
+    ws.on('open', () => {
+      console.log('WebSocket connection established.');
+    });
+  
+    ws.on('message', (data) => {
+      try {
+        const tickers = JSON.parse(data);
+        tickers.forEach((ticker) => {
+          const symbol = ticker.s; // Symbol in uppercase (e.g., LTCUSDT)
+          const price = parseFloat(ticker.c); // Current price
+          priceCache[symbol] = price; // Update cache
+        });
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error.message);
+      }
+    });
+  
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error.message);
+    });
+  
+    ws.on('close', () => {
+      console.log('WebSocket connection closed. Reconnecting...');
+      setTimeout(initializeWebSocket, 1000); // Reconnect after 1 second
+    });
+}
+
+// Function to get the live price from the cache
+function getLivePrice(symbol) {
+    return priceCache[symbol] || null; // Return price or null if not available
+}
+
 module.exports = {
   calculateQuantity,
   getCurrentPrice,
   setLeverage,
   placeFuturesMarketOrder,
   setStopLossAndTakeProfit,
+  initializeWebSocket,
+  getLivePrice
 };
