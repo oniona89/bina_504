@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { parseSignalUsingChatGPT } = require('./parseSignalGPT');
 const { saveSignalToFile } = require('./signalParser');
-const { executeTrade } = require('./binanceExecutor');
+const { executeTrades } = require('./binanceExecutor');
 const { sendTelegramMessage, logMessage } = require('./logger'); // Import logMessage and sendTelegramMessage
 
 // Replace with your API ID and Hash from my.telegram.org
@@ -115,7 +115,7 @@ const stringSession = new StringSession(sessionString);
             saveSignalToFile(signalData);
 
             // Execute the trade using Binance API
-            executeTrade(signalData, client, logOutputGroupEntity);
+            executeTrades(signalData, client, logOutputGroupEntity);
           }
         }
       }
