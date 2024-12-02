@@ -10,55 +10,66 @@ const binanceClient = binance.default({
   futures: true,
 });
 
-// Function to fetch quantity precision for a symbol
-async function calculateQuantity(symbol, investment, price, client, logOutputGroupEntity) {
-  try {
-    const exchangeInfo = await binanceClient.exchangeInfo();
-    const symbolInfo = exchangeInfo.symbols.find((s) => s.symbol === symbol);
-
-    if (!symbolInfo) {
-      throw new Error(`Symbol ${symbol} not found.`);
-    }
-
-    const lotSizeFilter = symbolInfo.filters.find((f) => f.filterType === 'LOT_SIZE');
-    const stepSize = parseFloat(lotSizeFilter.stepSize);
-    const minQty = parseFloat(lotSizeFilter.minQty);
-
-    logMessage(`Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`, client, logOutputGroupEntity);
-
-    let quantity = investment / price;
-    logMessage(
-      `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Price: ${price})`,
-      client,
-      logOutputGroupEntity
-    );
-
-    const precision = stepSize >= 1 ? 0 : Math.floor(Math.log10(1 / stepSize));
-
-    if (precision === 0) {
-      quantity = Math.floor(quantity);
-    } else {
-      quantity = Math.floor(quantity / stepSize) * stepSize;
-      quantity = parseFloat(quantity.toFixed(precision));
-    }
-
-    if (quantity < minQty) {
-      throw new Error(
-        `Quantity ${quantity} is below the minimum order size ${minQty} for ${symbol}`
+// Function to fetch quantity precision for a symbol and adjust for leverage
+async function calculateQuantity(symbol, investment, price, leverage, client, logOutputGroupEntity) {
+    try {
+      // Fetch exchange info for the symbol
+      const exchangeInfo = await binanceClient.exchangeInfo();
+      const symbolInfo = exchangeInfo.symbols.find((s) => s.symbol === symbol);
+  
+      if (!symbolInfo) {
+        throw new Error(`Symbol ${symbol} not found.`);
+      }
+  
+      // Fetch relevant filters for the symbol
+      const lotSizeFilter = symbolInfo.filters.find((f) => f.filterType === 'LOT_SIZE');
+      const stepSize = parseFloat(lotSizeFilter.stepSize);
+      const minQty = parseFloat(lotSizeFilter.minQty);
+  
+      logMessage(`Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`, client, logOutputGroupEntity);
+  
+      // Calculate the notional amount based on leverage
+      const notionalAmount = investment * leverage;
+  
+      // Calculate raw quantity using notional amount and price
+      let quantity = notionalAmount / price;
+      logMessage(
+        `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Leverage: ${leverage}, Price: ${price})`,
+        client,
+        logOutputGroupEntity
       );
+  
+      // Determine precision based on step size
+      const precision = stepSize >= 1 ? 0 : Math.floor(Math.log10(1 / stepSize));
+  
+      // Adjust quantity to adhere to the step size
+      if (precision === 0) {
+        quantity = Math.floor(quantity);
+      } else {
+        quantity = Math.floor(quantity / stepSize) * stepSize;
+        quantity = parseFloat(quantity.toFixed(precision));
+      }
+  
+      // Ensure quantity meets minimum order requirements
+      if (quantity < minQty) {
+        throw new Error(
+          `Quantity ${quantity} is below the minimum order size ${minQty} for ${symbol}`
+        );
+      }
+  
+      logMessage(
+        `Adjusted quantity for ${symbol}: ${quantity} (Step size: ${stepSize}, Min quantity: ${minQty}, Precision: ${precision})`,
+        client,
+        logOutputGroupEntity
+      );
+  
+      return quantity;
+    } catch (error) {
+      logMessage(`Error calculating quantity for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
+      throw error;
     }
-
-    logMessage(
-      `Adjusted quantity for ${symbol}: ${quantity} (Step size: ${stepSize}, Min quantity: ${minQty}, Precision: ${precision})`,
-      client,
-      logOutputGroupEntity
-    );
-    return quantity;
-  } catch (error) {
-    logMessage(`Error calculating quantity for ${symbol}: ${error.message}`, client, logOutputGroupEntity);
-    throw error;
   }
-}
+  
 
 // Function to get the current price of a symbol
 async function getCurrentPrice(symbol, client, logOutputGroupEntity) {
