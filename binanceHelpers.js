@@ -89,7 +89,7 @@ async function setLeverage(symbol, leverage, client, logOutputGroupEntity) {
   try {
     const response = await binanceClient.futuresLeverage({
       symbol: symbol,
-      leverage: leverage,
+      leverage: Number(leverage),
     });
     logMessage(`Leverage set for ${symbol} to ${leverage}`, client, logOutputGroupEntity);
     return response;
