@@ -29,7 +29,7 @@ async function calculateQuantity(symbol, investment, price, leverage, client, lo
       logMessage(`Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`, client, logOutputGroupEntity);
   
       // Calculate the notional amount based on leverage
-      const notionalAmount = investment * leverage;
+      const notionalAmount = investment * Number(leverage);;
   
       // Calculate raw quantity using notional amount and price
       let quantity = notionalAmount / price;
