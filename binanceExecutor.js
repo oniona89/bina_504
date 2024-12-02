@@ -83,7 +83,7 @@ async function processSignal(signalData, client, logOutputGroupEntity) {
     );
 
     // Set leverage
-    await setLeverage(tradingSymbol, Number(leverage) || 1, client, logOutputGroupEntity);
+    await setLeverage(tradingSymbol, leverage || 1, client, logOutputGroupEntity);
 
     // Calculate quantity
     const investment = 30; // Example investment value
@@ -91,6 +91,7 @@ async function processSignal(signalData, client, logOutputGroupEntity) {
       tradingSymbol,
       investment,
       currentPrice,
+      leverage,
       client,
       logOutputGroupEntity
     );

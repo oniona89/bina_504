@@ -26,7 +26,7 @@ async function calculateQuantity(symbol, investment, price, leverage, client, lo
       const minQty = parseFloat(lotSizeFilter.minQty);
   
       logMessage(`Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`, client, logOutputGroupEntity);
-  
+      console.log("leverage: ", Number(leverage))
       // Ensure leverage is a valid number
       const numericLeverage = Number(leverage);
       if (isNaN(numericLeverage)) {
