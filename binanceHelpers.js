@@ -10,7 +10,6 @@ const binanceClient = binance.default({
   futures: true,
 });
 
-// Function to fetch quantity precision for a symbol and adjust for leverage
 async function calculateQuantity(symbol, investment, price, leverage, client, logOutputGroupEntity) {
     try {
       // Fetch exchange info for the symbol
@@ -28,13 +27,19 @@ async function calculateQuantity(symbol, investment, price, leverage, client, lo
   
       logMessage(`Step size for ${symbol}: ${stepSize}, Min quantity: ${minQty}`, client, logOutputGroupEntity);
   
+      // Ensure leverage is a valid number
+      const numericLeverage = Number(leverage);
+      if (isNaN(numericLeverage)) {
+        throw new Error(`Invalid leverage value: ${leverage}`);
+      }
+  
       // Calculate the notional amount based on leverage
-      const notionalAmount = investment * Number(leverage);;
+      const notionalAmount = investment * numericLeverage;
   
       // Calculate raw quantity using notional amount and price
       let quantity = notionalAmount / price;
       logMessage(
-        `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Leverage: ${leverage}, Price: ${price})`,
+        `Raw calculated quantity for ${symbol}: ${quantity} (Investment: ${investment}, Leverage: ${numericLeverage}, Price: ${price})`,
         client,
         logOutputGroupEntity
       );
@@ -89,7 +94,7 @@ async function setLeverage(symbol, leverage, client, logOutputGroupEntity) {
   try {
     const response = await binanceClient.futuresLeverage({
       symbol: symbol,
-      leverage: Number(leverage),
+      leverage: leverage,
     });
     logMessage(`Leverage set for ${symbol} to ${leverage}`, client, logOutputGroupEntity);
     return response;
