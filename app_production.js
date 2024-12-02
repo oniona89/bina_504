@@ -111,6 +111,7 @@ const stringSession = new StringSession(sessionString);
           (groupId * -1) === test_bina_2_crypto_mock
         ) {
           try {
+            console.log('Got message')
             const signalData = await parseSignalUsingChatGPT(message);
             logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
 
