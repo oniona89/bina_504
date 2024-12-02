@@ -85,8 +85,8 @@ const stringSession = new StringSession(sessionString);
   // Health check function to be sent every 120 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
-    logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
-    await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
+    //logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
+    //await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
   }
 
   // Start processing Binance trades
