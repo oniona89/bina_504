@@ -104,11 +104,12 @@ client.addEventHandler(async (update) => {
     if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock].includes(groupId * -1)) {
       logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
 
-      // Filter messages to exclude those unlikely to be signals
-      if (!message.includes('LONG') && !message.includes('SHORT')) {
+      // Filter messages to exclude those unlikely to be signals (case-insensitive)
+      if (!message.toLowerCase().includes('long') && !message.toLowerCase().includes('short')) {
         logMessage(`Message filtered out: ${message}`, client, logOutputGroupEntity);
         return; // Skip processing this message
       }
+
 
       // Process messages as signals if from target groups
       if (

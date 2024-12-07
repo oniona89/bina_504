@@ -30,7 +30,7 @@ function logMessage(message, client, logOutputGroupEntity) {
 
   // Optionally send log message to Telegram
   if (client && logOutputGroupEntity) {
-    //sendTelegramMessage(client, logOutputGroupEntity, message);
+    sendTelegramMessage(client, logOutputGroupEntity, message);
   }
 
   // Print to console for real-time feedback
