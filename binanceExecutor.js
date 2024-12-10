@@ -47,6 +47,7 @@ function addSignal(signal) {
 
 // Function to process a single signal
 async function processSignal(signalData, client, logOutputGroupEntity) {
+  console.log("signal data: ", signalData)
   try {
     const { position, symbol, entryPriceRange, leverage, targets, stopLoss } = signalData;
 

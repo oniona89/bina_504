@@ -142,6 +142,12 @@ async function placeFuturesMarketOrder(symbol, side, quantity, client, logOutput
   }
 }
 
+// Helper function to round values according to a given step size or tick size.
+function adjustToPrecision(value, step) {
+  const precision = Math.log10(1 / parseFloat(step));
+  return parseFloat(value.toFixed(precision));
+}
+
 // Function to set Stop-Loss and Take-Profit
 async function setStopLossAndTakeProfit(
   symbol,
@@ -152,36 +158,149 @@ async function setStopLossAndTakeProfit(
   client,
   logOutputGroupEntity
 ) {
+  // Log the incoming parameters
+  logMessage(
+    `Setting Stop-Loss and Take-Profit for:
+    Symbol: ${symbol},
+    Side: ${side},
+    Quantity: ${quantity},
+    Stop-Loss Price: ${stopLossPrice},
+    Take-Profit Price: ${takeProfitPrice}`,
+    client,
+    logOutputGroupEntity
+  );
+
   try {
+    // Fetch the exchange info to determine precision requirements
+    const exchangeInfo = await binanceClient.futuresExchangeInfo();
+    const symbolInfo = exchangeInfo.symbols.find(s => s.symbol === symbol);
+
+    if (!symbolInfo) {
+      throw new Error(`Symbol ${symbol} not found in exchange info`);
+    }
+
+    // Extract PRICE_FILTER and LOT_SIZE filters
+    const priceFilter = symbolInfo.filters.find(f => f.filterType === 'PRICE_FILTER');
+    const lotSizeFilter = symbolInfo.filters.find(f => f.filterType === 'LOT_SIZE');
+
+    if (!priceFilter || !lotSizeFilter) {
+      throw new Error(`Could not find PRICE_FILTER or LOT_SIZE for ${symbol}`);
+    }
+
+    const tickSize = priceFilter.tickSize;
+    const stepSize = lotSizeFilter.stepSize;
+
+    // Adjust stopLossPrice and takeProfitPrice according to tickSize
+    const adjustedStopLossPrice = adjustToPrecision(stopLossPrice, tickSize);
+    const adjustedTakeProfitPrice = adjustToPrecision(takeProfitPrice, tickSize);
+
+    // Adjust quantity according to stepSize
+    const adjustedQuantity = adjustToPrecision(quantity, stepSize);
+
+    logMessage(
+      `Adjusted values after checking exchange info for ${symbol}:
+      Tick Size: ${tickSize},
+      Step Size: ${stepSize},
+      Original Stop-Loss Price: ${stopLossPrice}, Adjusted Stop-Loss Price: ${adjustedStopLossPrice}
+      Original Take-Profit Price: ${takeProfitPrice}, Adjusted Take-Profit Price: ${adjustedTakeProfitPrice}
+      Original Quantity: ${quantity}, Adjusted Quantity: ${adjustedQuantity}`,
+      client,
+      logOutputGroupEntity
+    );
+
+    // Attempting Stop-Loss order
+    logMessage(
+      `Attempting to place Stop-Loss order with payload:
+      {
+        symbol: "${symbol}",
+        side: "${side}",
+        type: "STOP_MARKET",
+        stopPrice: ${adjustedStopLossPrice},
+        quantity: ${adjustedQuantity},
+        reduceOnly: true
+      }`,
+      client,
+      logOutputGroupEntity
+    );
+
     const stopLossOrder = await binanceClient.futuresOrder({
       symbol: symbol,
       side: side,
       type: 'STOP_MARKET',
-      stopPrice: stopLossPrice,
-      quantity: quantity,
+      stopPrice: adjustedStopLossPrice,
+      quantity: adjustedQuantity,
       reduceOnly: true,
     });
 
-    logMessage(`Stop-Loss order placed: ${JSON.stringify(stopLossOrder)}`, client, logOutputGroupEntity);
+    logMessage(
+      `Stop-Loss order placed successfully for ${symbol}. Response:
+      ${JSON.stringify(stopLossOrder)}`,
+      client,
+      logOutputGroupEntity
+    );
+
+    // Attempting Take-Profit order
+    logMessage(
+      `Attempting to place Take-Profit order with payload:
+      {
+        symbol: "${symbol}",
+        side: "${side}",
+        type: "TAKE_PROFIT_MARKET",
+        stopPrice: ${adjustedTakeProfitPrice},
+        quantity: ${adjustedQuantity},
+        reduceOnly: true
+      }`,
+      client,
+      logOutputGroupEntity
+    );
 
     const takeProfitOrder = await binanceClient.futuresOrder({
       symbol: symbol,
       side: side,
       type: 'TAKE_PROFIT_MARKET',
-      stopPrice: takeProfitPrice,
-      quantity: quantity,
+      stopPrice: adjustedTakeProfitPrice,
+      quantity: adjustedQuantity,
       reduceOnly: true,
     });
 
-    logMessage(`Take-Profit order placed: ${JSON.stringify(takeProfitOrder)}`, client, logOutputGroupEntity);
-  } catch (error) {
     logMessage(
-      `Error setting Stop-Loss or Take-Profit for ${symbol}: ${error.message}`,
+      `Take-Profit order placed successfully for ${symbol}. Response:
+      ${JSON.stringify(takeProfitOrder)}`,
       client,
       logOutputGroupEntity
     );
+
+    logMessage(
+      `Stop-Loss and Take-Profit orders have been placed successfully for ${symbol}.
+      Final Stop-Loss Price: ${adjustedStopLossPrice},
+      Final Take-Profit Price: ${adjustedTakeProfitPrice},
+      Final Quantity: ${adjustedQuantity}`,
+      client,
+      logOutputGroupEntity
+    );
+
+  } catch (error) {
+    // Log the error details
+    logMessage(
+      `Error setting Stop-Loss or Take-Profit for ${symbol}:
+      Error Message: ${error.message}
+      Parameters:
+      Symbol: ${symbol},
+      Side: ${side},
+      Quantity: ${quantity},
+      Stop-Loss Price: ${stopLossPrice},
+      Take-Profit Price: ${takeProfitPrice}`,
+      client,
+      logOutputGroupEntity
+    );
+
+    // Log the full stack trace for debugging
+    logMessage(`Error Stack: ${error.stack}`, client, logOutputGroupEntity);
+    console.error(error);
   }
 }
+
+
 
 // Live price cache for WebSocket updates
 let priceCache = {};
