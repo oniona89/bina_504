@@ -47,11 +47,12 @@ const stringSession = new StringSession(sessionString);
   }
 
   // Group IDs
-  let targetGroupId, veeAnalysisGroupId;
+  let targetGroupId, veeAnalysisGroupId, newGroupId;  
   const targetGroupName = '@Cryptosignals_Real1';
   const veeAnalysisGroupName = -1001754775046;
   const log_output_group_username = -4522993194;
   const test_bina_2_crypto_mock = -4578127979;
+  const newGroupName = '@hhhvbbbbbvvgf';  // New group username
 
   // Load entities for the target groups
   let logOutputGroupEntity;
@@ -82,6 +83,16 @@ const stringSession = new StringSession(sessionString);
     return;
   }
 
+  // Load the new group entity
+  try {
+    const newGroupEntity = await client.getEntity(newGroupName);
+    newGroupId = newGroupEntity.id * -1;
+    logMessage(`New group (${newGroupName}) entity loaded successfully.`, client, logOutputGroupEntity);
+  } catch (error) {
+    console.error(`Error loading new group (${newGroupName}) entity:`, error);
+    return;
+  }
+
   // Health check function to be sent every 120 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
@@ -95,45 +106,46 @@ const stringSession = new StringSession(sessionString);
   // Set an interval to send a health check every 120 seconds
   setInterval(sendHealthCheck, 120 * 1000);
 
-// Listen for messages from the target groups
-client.addEventHandler(async (update) => {
-  if (update && update.message && update.message.message) {
-    const message = update.message.message;
-    const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
+  // Listen for messages from the target groups
+  client.addEventHandler(async (update) => {
+    if (update && update.message && update.message.message) {
+      const message = update.message.message;
+      const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
 
-    if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock].includes(groupId * -1)) {
-      logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
+      // Include the newGroupId in the groups we are listening to:
+      if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock, newGroupId].includes(groupId * -1)) {
+        logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
 
-      // Filter messages to exclude those unlikely to be signals (case-insensitive)
-      if (!message.toLowerCase().includes('long') && !message.toLowerCase().includes('short')) {
-        logMessage(`Message filtered out: ${message}`, client, logOutputGroupEntity);
-        return; // Skip processing this message
-      }
+        // Filter messages to exclude those unlikely to be signals (case-insensitive)
+        if (!message.toLowerCase().includes('long') && !message.toLowerCase().includes('short')) {
+          logMessage(`Message filtered out: ${message}`, client, logOutputGroupEntity);
+          return; // Skip processing this message
+        }
 
+        // Process messages as signals if from target groups
+        if (
+          (groupId * -1) === targetGroupId ||
+          (groupId * -1) === veeAnalysisGroupId ||
+          (groupId * -1) === test_bina_2_crypto_mock ||
+          (groupId * -1) === newGroupId
+        ) {
+          try {
+            console.log('Got message');
+            const signalData = await parseSignalUsingChatGPT(message);
+            logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
 
-      // Process messages as signals if from target groups
-      if (
-        (groupId * -1) === targetGroupId ||
-        (groupId * -1) === veeAnalysisGroupId ||
-        (groupId * -1) === test_bina_2_crypto_mock
-      ) {
-        try {
-          console.log('Got message');
-          const signalData = await parseSignalUsingChatGPT(message);
-          logMessage(`Parsed signal data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
+            if (signalData && signalData.position) {
+              logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
+              saveSignalToFile(signalData);
 
-          if (signalData && signalData.position) {
-            logMessage(`Parsed Signal Data: ${JSON.stringify(signalData)}`, client, logOutputGroupEntity);
-            saveSignalToFile(signalData);
-
-            // Add the signal to the Binance executor's queue
-            addSignal(signalData);
+              // Add the signal to the Binance executor's queue
+              addSignal(signalData);
+            }
+          } catch (error) {
+            logMessage(`Error parsing signal: ${error.message}`, client, logOutputGroupEntity);
           }
-        } catch (error) {
-          logMessage(`Error parsing signal: ${error.message}`, client, logOutputGroupEntity);
         }
       }
     }
-  }
-});
+  });
 })();
