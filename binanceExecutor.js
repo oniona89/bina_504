@@ -47,7 +47,7 @@ function addSignal(signal) {
 
 // Function to process a single signal
 async function processSignal(signalData, client, logOutputGroupEntity) {
-  console.log("signal data: ", signalData)
+  console.log("signal data: ", signalData);
   try {
     const { position, symbol, entryPriceRange, leverage, targets, stopLoss } = signalData;
 
@@ -64,16 +64,27 @@ async function processSignal(signalData, client, logOutputGroupEntity) {
       logOutputGroupEntity
     );
 
-    // Continuously check the live price until it is within the range
-    let currentPrice = getLivePrice(tradingSymbol);
+    const startTime = Date.now(); // Record the start time
 
+    // Continuously check the live price until it is within the range or timeout occurs
+    let currentPrice = getLivePrice(tradingSymbol);
     while (!currentPrice || currentPrice < minPrice || currentPrice > maxPrice) {
+      const elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
+      if (elapsedTime > 1800) { // 30 minutes = 1800 seconds
+        logMessage(
+          `Timeout reached for ${tradingSymbol}. Unable to enter position within 30 minutes.`,
+          client,
+          logOutputGroupEntity
+        );
+        return; // Exit the function
+      }
+
       logMessage(
         `Current price of ${tradingSymbol} is ${currentPrice || 'null'}, not in range (${minPrice} - ${maxPrice}). Retrying...`,
         client,
         logOutputGroupEntity
       );
-      await delay(5000); // Wait for 5 seconds before re-checking
+      await delay(15000); // Wait for 15 seconds before re-checking
       currentPrice = getLivePrice(tradingSymbol);
     }
 
@@ -129,6 +140,7 @@ async function processSignal(signalData, client, logOutputGroupEntity) {
     logMessage(`Error processing signal for ${signalData.symbol}: ${error.message}`, client, logOutputGroupEntity);
   }
 }
+
 
 module.exports = {
   executeTrades,
