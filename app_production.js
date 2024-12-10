@@ -47,12 +47,13 @@ const stringSession = new StringSession(sessionString);
   }
 
   // Group IDs
-  let targetGroupId, veeAnalysisGroupId, newGroupId;  
+  let targetGroupId, veeAnalysisGroupId, newGroupId, bitcoinBulletsGroupId;
   const targetGroupName = '@Cryptosignals_Real1';
   const veeAnalysisGroupName = -1001754775046;
   const log_output_group_username = -4522993194;
   const test_bina_2_crypto_mock = -4578127979;
-  const newGroupName = '@hhhvbbbbbvvgf';  // New group username
+  const newGroupName = '@hhhvbbbbbvvgf'; // New group username
+  const bitcoinBulletsGroupName = '@Bitcoinn_Bulletsanalysis'; // New group added
 
   // Load entities for the target groups
   let logOutputGroupEntity;
@@ -83,7 +84,6 @@ const stringSession = new StringSession(sessionString);
     return;
   }
 
-  // Load the new group entity
   try {
     const newGroupEntity = await client.getEntity(newGroupName);
     newGroupId = newGroupEntity.id * -1;
@@ -93,11 +93,21 @@ const stringSession = new StringSession(sessionString);
     return;
   }
 
+  // Load the Bitcoin Bullets group entity
+  try {
+    const bitcoinBulletsGroupEntity = await client.getEntity(bitcoinBulletsGroupName);
+    bitcoinBulletsGroupId = bitcoinBulletsGroupEntity.id * -1;
+    logMessage(`Bitcoin Bullets group (${bitcoinBulletsGroupName}) entity loaded successfully.`, client, logOutputGroupEntity);
+  } catch (error) {
+    console.error(`Error loading Bitcoin Bullets group (${bitcoinBulletsGroupName}) entity:`, error);
+    return;
+  }
+
   // Health check function to be sent every 120 seconds
   async function sendHealthCheck() {
     const healthMessage = `✅ App is running: ${new Date().toISOString()}`;
-    //logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
-    //await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
+    logMessage(`Sending health check: ${healthMessage}`, client, logOutputGroupEntity);
+    await sendTelegramMessage(client, logOutputGroupEntity, healthMessage);
   }
 
   // Start processing Binance trades
@@ -112,8 +122,8 @@ const stringSession = new StringSession(sessionString);
       const message = update.message.message;
       const groupId = Number(update.message.peerId.channelId) || Number(update.message.peerId.chatId);
 
-      // Include the newGroupId in the groups we are listening to:
-      if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock, newGroupId].includes(groupId * -1)) {
+      // Include the newGroupId and bitcoinBulletsGroupId in the groups we are listening to:
+      if ([targetGroupId, veeAnalysisGroupId, test_bina_2_crypto_mock, newGroupId, bitcoinBulletsGroupId].includes(groupId * -1)) {
         logMessage(`New message from group: ${message}`, client, logOutputGroupEntity);
 
         // Filter messages to exclude those unlikely to be signals (case-insensitive)
@@ -127,7 +137,8 @@ const stringSession = new StringSession(sessionString);
           (groupId * -1) === targetGroupId ||
           (groupId * -1) === veeAnalysisGroupId ||
           (groupId * -1) === test_bina_2_crypto_mock ||
-          (groupId * -1) === newGroupId
+          (groupId * -1) === newGroupId ||
+          (groupId * -1) === bitcoinBulletsGroupId
         ) {
           try {
             console.log('Got message');
