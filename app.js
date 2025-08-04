@@ -7,8 +7,8 @@ const { parseSignal, saveSignalToFile } = require('./signalParser');
 const { executeTrade } = require('./binanceExecutor');
 
 // Replace with your API ID and Hash from my.telegram.org
-const apiId = 18030888;
-const apiHash = 'cba4b1a292d9cb0800e953b94cd76654';
+const apiId = *************;
+const apiHash = '***********************';
 
 // Log file paths
 const logFilePath = path.join(__dirname, 'log.txt');
@@ -88,3 +88,4 @@ const stringSession = new StringSession(sessionString); // Initialize the sessio
     }
   });
 })();
+
